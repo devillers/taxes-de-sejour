@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 
 export const metadata = {
   title: "Taxe de s\u00e9jour",
-  description: "Application de calcul de la taxe de s\u00e9jour",
+  description: "Application de calcul de la taxe de séjour",
 };
 
 export default function RootLayout({ children }) {
@@ -23,12 +23,12 @@ export default function RootLayout({ children }) {
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <nav className="p-4 bg-gray-100 border-b mb-4">
+        <nav className="p-4 bg-gray-100 text-black border-b mb-4">
           <Link href="/" className="mr-4 hover:underline">
             Accueil
           </Link>
           <Link href="/taxe-de-sejour" className="hover:underline">
-            Taxe de s\u00e9jour
+            Taxe de Séjour
           </Link>
         </nav>
         {children}
