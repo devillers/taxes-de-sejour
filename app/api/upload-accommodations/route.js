@@ -1,10 +1,8 @@
 import { NextResponse } from 'next/server';
-import mongoose from 'mongoose';
-import Accommodation from '@/models/accommodation';
-import Owner from '@/models/owners';
-import { parseCsvBuffer } from '@/lib/parseCsvBuffer';
-
-await mongoose.connect(process.env.MONGODB_URI);
+import Accommodation from '../../models/accomodation';
+import Owner from '../../models/owners';
+import { parseCsvBuffer } from '../../lib/parseCsvBuffer';
+import { connectDb } from '../../lib/db'; // 👈 nouvelle import
 
 export const config = {
   api: {
@@ -13,6 +11,8 @@ export const config = {
 };
 
 export async function POST(req) {
+  await connectDb(); // 👈 utilise la connexion ici
+
   const formData = await req.formData();
   const file = formData.get('file');
 
@@ -30,10 +30,8 @@ export async function POST(req) {
   let imported = 0;
 
   for (const row of rows) {
-    // Cherche le propriétaire par ID (string)
     const owner = await Owner.findOne({ id: row["Id Propriétaires"] });
-
-    if (!owner) continue; // pas de correspondance, on ignore
+    if (!owner) continue;
 
     const data = {
       owner: owner._id,
@@ -60,7 +58,6 @@ export async function POST(req) {
       referenceCadastrale: row["Référence cadastrale"],
     };
 
-    // Upsert par combinaison propriétaire + code logement
     await Accommodation.updateOne(
       { code: data.code, owner: owner._id },
       { $set: data },
