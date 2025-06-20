@@ -37,7 +37,17 @@ export default function LogementManager({ initialAccommodations }) {
 
   const handleEdit = (a) => {
     setEditingId(a._id);
+
+    setForm({
+      owner: a.ownerId || (a.owner?.id) || a.owner,
+      logement: a.logement || '',
+      adresse: a.adresse || '',
+      codePostal: a.codePostal || '',
+      localite: a.localite || '',
+    });
+
     setForm({ owner: a.owner?._id || a.owner, logement: a.logement || '', adresse: a.adresse || '', codePostal: a.codePostal || '' });
+
   };
 
   const handleDelete = async (id) => {
@@ -78,7 +88,7 @@ export default function LogementManager({ initialAccommodations }) {
         <tbody>
           {accommodations.map((a) => (
             <tr key={a._id} className="border-t">
-              <td className="border px-2 py-1">{a.owner?._id || a.owner}</td>
+              <td className="border px-2 py-1">{a.ownerId || a.owner?.id || a.owner}</td>
               <td className="border px-2 py-1">{a.logement}</td>
               <td className="border px-2 py-1">{a.adresse}</td>
               <td className="border px-2 py-1">{a.codePostal}</td>

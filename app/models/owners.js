@@ -13,6 +13,7 @@ const ownerSchema = new mongoose.Schema({
   adresse: { type: String, trim: true },
   codePostal: { type: String, trim: true },
   ville: { type: String, trim: true },
+  localite: { type: String, trim: true },
   email: { type: String, lowercase: true, trim: true },
   telephone: { type: String, trim: true },
   siret: { type: String, trim: true },

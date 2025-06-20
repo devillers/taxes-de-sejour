@@ -9,7 +9,8 @@ export default function VersementTable({ rows }) {
     return rows.filter(r =>
       r.nomProprietaire.toLowerCase().includes(term) ||
       r.logement.toLowerCase().includes(term) ||
-      r.adresse.toLowerCase().includes(term)
+      r.adresse.toLowerCase().includes(term) ||
+      r.localite.toLowerCase().includes(term)
     );
   }, [rows, search]);
 
@@ -31,6 +32,7 @@ export default function VersementTable({ rows }) {
             <th className="border px-2 py-1">Nom propriétaire</th>
             <th className="border px-2 py-1">Logement</th>
             <th className="border px-2 py-1">Adresse</th>
+            <th className="border px-2 py-1">Localité</th>
             <th className="border px-2 py-1">Code postal</th>
             <th className="border px-2 py-1">N° registre touristique</th>
             <th className="border px-2 py-1">Classement</th>
@@ -44,6 +46,7 @@ export default function VersementTable({ rows }) {
               <td className="border px-2 py-1">{r.nomProprietaire}</td>
               <td className="border px-2 py-1">{r.logement}</td>
               <td className="border px-2 py-1">{r.adresse}</td>
+              <td className="border px-2 py-1">{r.localite}</td>
               <td className="border px-2 py-1">{r.codePostal}</td>
               <td className="border px-2 py-1">{r.numeroRegistreTouristique}</td>
               <td className="border px-2 py-1">{r.classement}</td>
