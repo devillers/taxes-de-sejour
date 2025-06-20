@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { connectDb } from '../../../lib/db';
-import Accommodation from '../../../models/accomodations';
+import Accommodation from '../../../models/accommodations';
 
 export async function GET(req, { params }) {
   await connectDb();
