@@ -12,7 +12,7 @@ const accommodationSchema = new mongoose.Schema({
   tarif: String,
   edifice: String,
   regrouperParGalerie: String,
-  localite: String,
+  localite: { type: String, trim: true },
   quartier: String,
   codePostal: String,
   typeVoie: String,

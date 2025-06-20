@@ -20,6 +20,7 @@ export default async function LogementsPage() {
     ...doc,
     _id: doc._id.toString(),
     localite: doc.localite,
+    ownerId: doc.owner ? doc.owner.id : null,
     owner: doc.owner
       ? {
           ...doc.owner,
