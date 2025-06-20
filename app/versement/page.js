@@ -24,6 +24,7 @@ export default async function VersementPage() {
         `${a.owner?.prenom || ''} ${a.owner?.nom || ''}`.trim(),
       logement: a.logement,
       adresse: [a.numero, a.adresse].filter(Boolean).join(' '),
+      localite: a.localite,
       codePostal: a.codePostal,
       numeroRegistreTouristique: a.numeroRegistreTouristique || '',
       classement: a.numeroRegistreTouristique ? 'Classé' : 'Non classé',
