@@ -19,12 +19,16 @@ export default async function VersementPage() {
       classement: a.numeroRegistreTouristique ? 'Classé' : 'Non classé',
     }));
 
+  const rowCount = rows.length;
+
   return (
     <div className="p-8">
-      <h1 className="text-2xl font-bold mb-4">Logements à reverser</h1>
+      <h1 className="text-2xl font-bold">Logements à reverser</h1>
+      <p className="mb-4">Nombre de logements: {rowCount}</p>
       <table className="min-w-full border text-sm">
         <thead className="bg-gray-100">
           <tr>
+            <th className="border px-2 py-1">N°</th>
             <th className="border px-2 py-1">ownerId</th>
             <th className="border px-2 py-1">Nom propriétaire</th>
             <th className="border px-2 py-1">Logement</th>
@@ -37,6 +41,7 @@ export default async function VersementPage() {
         <tbody>
           {rows.map((r, idx) => (
             <tr key={idx} className="border-t">
+              <td className="border px-2 py-1 text-center">{idx + 1}</td>
               <td className="border px-2 py-1">{r.ownerId}</td>
               <td className="border px-2 py-1">{r.nomProprietaire}</td>
               <td className="border px-2 py-1">{r.logement}</td>
