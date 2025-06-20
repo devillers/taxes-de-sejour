@@ -3,7 +3,7 @@ import { useState } from 'react';
 
 export default function LogementManager({ initialAccommodations }) {
   const [accommodations, setAccommodations] = useState(initialAccommodations);
-  const [form, setForm] = useState({ owner: '', logement: '', adresse: '', codePostal: '' });
+  const [form, setForm] = useState({ owner: '', logement: '', adresse: '', codePostal: '', localite: '' });
   const [editingId, setEditingId] = useState(null);
 
   const handleChange = (e) => {
@@ -11,7 +11,7 @@ export default function LogementManager({ initialAccommodations }) {
   };
 
   const resetForm = () => {
-    setForm({ owner: '', logement: '', adresse: '', codePostal: '' });
+    setForm({ owner: '', logement: '', adresse: '', codePostal: '', localite: '' });
     setEditingId(null);
   };
 
@@ -46,8 +46,6 @@ export default function LogementManager({ initialAccommodations }) {
       localite: a.localite || '',
     });
 
-    setForm({ owner: a.owner?._id || a.owner, logement: a.logement || '', adresse: a.adresse || '', codePostal: a.codePostal || '' });
-
   };
 
   const handleDelete = async (id) => {
@@ -66,6 +64,7 @@ export default function LogementManager({ initialAccommodations }) {
         <input name="logement" value={form.logement} onChange={handleChange} placeholder="logement" className="border p-1" />
         <input name="adresse" value={form.adresse} onChange={handleChange} placeholder="adresse" className="border p-1" />
         <input name="codePostal" value={form.codePostal} onChange={handleChange} placeholder="codePostal" className="border p-1" />
+        <input name="localite" value={form.localite} onChange={handleChange} placeholder="localite" className="border p-1" />
         <button type="submit" className="px-2 py-1 bg-blue-500 text-white rounded">
           {editingId ? 'Modifier' : 'Ajouter'}
         </button>
@@ -82,6 +81,7 @@ export default function LogementManager({ initialAccommodations }) {
             <th className="border px-2 py-1">Logement</th>
             <th className="border px-2 py-1">Adresse</th>
             <th className="border px-2 py-1">Code postal</th>
+            <th className="border px-2 py-1">Localité</th>
             <th className="border px-2 py-1">Actions</th>
           </tr>
         </thead>
@@ -92,6 +92,7 @@ export default function LogementManager({ initialAccommodations }) {
               <td className="border px-2 py-1">{a.logement}</td>
               <td className="border px-2 py-1">{a.adresse}</td>
               <td className="border px-2 py-1">{a.codePostal}</td>
+              <td className="border px-2 py-1">{a.localite}</td>
               <td className="border px-2 py-1 space-x-2">
                 <button type="button" className="text-blue-600" onClick={() => handleEdit(a)}>Edit</button>
                 <button type="button" className="text-red-600" onClick={() => handleDelete(a._id)}>Delete</button>

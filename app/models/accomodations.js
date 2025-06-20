@@ -25,6 +25,15 @@ const accommodationSchema = new mongoose.Schema({
   numeroRegistreTouristique: String,
   commentairesAdditionnels: String,
   referenceCadastrale: String,
+  // Champs fournis par le fichier taxeDeSejour (pas présents dans le CSV d'origine)
+  prixNuitee: Number,
+  sejourDuree: Number,
+  sejourPerception: String,
+  sejourDebut: Date,
+  nbPersonnes: Number,
+  nbNuitees: Number,
+  tarifUnitaireTaxe: Number,
+  montantTaxe: Number,
 }, {
   timestamps: true,
 });
