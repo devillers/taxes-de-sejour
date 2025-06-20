@@ -50,7 +50,7 @@ export default function LogementManager({ initialAccommodations }) {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-4">Gestion des logements</h1>
+   
       <form onSubmit={handleSubmit} className="mb-4 space-x-2">
         <input name="owner" value={form.owner} onChange={handleChange} placeholder="ownerId" className="border p-1" />
         <input name="logement" value={form.logement} onChange={handleChange} placeholder="logement" className="border p-1" />
@@ -65,7 +65,7 @@ export default function LogementManager({ initialAccommodations }) {
           </button>
         )}
       </form>
-      <table className="min-w-full border text-sm">
+      <table className="min-w-full border text-xs">
         <thead className="bg-gray-100">
           <tr>
             <th className="border px-2 py-1">ownerId</th>
