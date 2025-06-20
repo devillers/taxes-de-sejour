@@ -19,6 +19,7 @@ export default async function LogementsPage() {
   const accommodations = raw.map(doc => ({
     ...doc,
     _id: doc._id.toString(),
+    localite: doc.localite,
     owner: doc.owner
       ? {
           ...doc.owner,
