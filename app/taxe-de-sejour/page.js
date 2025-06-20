@@ -8,8 +8,10 @@ import CSVUploader from '@/components/CSVUploader';
 export default function ImportPage() {
   const [ownerFile, setOwnerFile] = useState(null);
   const [accomFile, setAccomFile] = useState(null);
+  const [taxFile, setTaxFile] = useState(null);
   const [ownerMsg, setOwnerMsg] = useState('');
   const [accomMsg, setAccomMsg] = useState('');
+  const [taxMsg, setTaxMsg] = useState('');
 
   const handleUpload = async (file, endpoint, setMsg) => {
     if (!file) {
@@ -80,6 +82,31 @@ export default function ImportPage() {
         </button>
         {accomMsg && (
           <p className="mt-2 text-sm text-blue-700">{accomMsg}</p>
+        )}
+      </div>
+
+      {/* 3. Taxes de séjour */}
+      <div>
+        <h2 className="text-xl font-semibold mb-2">3. Importer la taxe de séjour</h2>
+        <CSVUploader
+          id="tax-upload"
+          fileName={taxFile?.name}
+          onFileSelect={setTaxFile}
+        />
+        <button
+          onClick={() =>
+            handleUpload(
+              taxFile,
+              '/api/upload-taxes',
+              setTaxMsg
+            )
+          }
+          className="mt-4 px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700"
+        >
+          Importer la taxe de séjour
+        </button>
+        {taxMsg && (
+          <p className="mt-2 text-sm text-purple-700">{taxMsg}</p>
         )}
       </div>
     </div>
