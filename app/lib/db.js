@@ -1,23 +1,34 @@
-// lib/db.js
+//app/lib/db.js
 import mongoose from 'mongoose';
 
 const MONGODB_URI = process.env.MONGODB_URI;
 
-if (!MONGODB_URI) throw new Error('MONGODB_URI not defined');
+if (!MONGODB_URI) throw new Error('❌ MONGODB_URI not defined in .env');
 
-let cached = global.mongoose || { conn: null, promise: null };
+let cached = global.mongoose;
+
+if (!cached) {
+  cached = global.mongoose = { conn: null, promise: null };
+}
 
 export async function connectDb() {
   if (cached.conn) return cached.conn;
 
   if (!cached.promise) {
     cached.promise = mongoose.connect(MONGODB_URI, {
+      dbName: 'taxes-de-sejour', // adapte si besoin
       bufferCommands: false,
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    }).then((mongoose) => {
+      console.log('[MongoDB] ✅ Connecté avec succès');
+      return mongoose;
+    }).catch((err) => {
+      console.error('[MongoDB] ❌ Échec de connexion :', err);
+      throw err;
     });
   }
 
   cached.conn = await cached.promise;
-  global.mongoose = cached;
-
   return cached.conn;
 }

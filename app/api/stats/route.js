@@ -1,7 +1,9 @@
+//app/api/stats/route.js
+
 import { NextResponse } from 'next/server';
 import { connectDb } from '../../lib/db';
 import Owner from '../../models/owners';
-import Accommodation from '../../models/accomodation';
+import Accommodation from '../../models/accomodations';
 
 export async function GET() {
   await connectDb();

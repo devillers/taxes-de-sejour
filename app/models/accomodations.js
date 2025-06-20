@@ -1,3 +1,5 @@
+//app/models/accomodation.js
+
 import mongoose from 'mongoose';
 
 const accommodationSchema = new mongoose.Schema({

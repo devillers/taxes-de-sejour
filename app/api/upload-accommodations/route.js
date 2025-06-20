@@ -1,8 +1,10 @@
+// app/api/upload-accommodations/route.js
+
 import { NextResponse } from 'next/server';
-import Accommodation from '../../models/accomodation';
+import { connectDb } from '../../lib/db';
+import Accommodation from '../../models/accomodations';
 import Owner from '../../models/owners';
 import { parseCsvBuffer } from '../../lib/parseCsvBuffer';
-import { connectDb } from '../../lib/db'; // 👈 nouvelle import
 
 export const config = {
   api: {
@@ -11,61 +13,108 @@ export const config = {
 };
 
 export async function POST(req) {
-  await connectDb(); // 👈 utilise la connexion ici
+  try {
+    await connectDb();
+    console.log('[API] Connexion DB OK');
 
-  const formData = await req.formData();
-  const file = formData.get('file');
+    const formData = await req.formData();
+    const file = formData.get('file');
 
-  if (!file) {
-    return NextResponse.json({ error: 'Aucun fichier envoyé' }, { status: 400 });
-  }
+    if (!file) {
+      console.log('[API] Aucun fichier reçu');
+      return NextResponse.json({ error: 'Aucun fichier envoyé' }, { status: 400 });
+    }
 
-  const buffer = Buffer.from(await file.arrayBuffer());
+    const buffer = Buffer.from(await file.arrayBuffer());
 
-  const rows = await parseCsvBuffer(buffer, (row) => {
-    if (!row["Id Propriétaires"] || !row["Code"]) return null;
-    return row;
-  });
-
-  let imported = 0;
-
-  for (const row of rows) {
-    const owner = await Owner.findOne({ id: row["Id Propriétaires"] });
-    if (!owner) continue;
-
-    const data = {
-      owner: owner._id,
-      code: row["Code"],
-      etat: row["État"],
-      logement: row["Logement"],
-      type: row["Type"],
-      capaciteTotale: parseInt(row["Capacité totale"]) || 0,
-      tarif: row["Tarif"],
-      edifice: row["Édifice"],
-      regrouperParGalerie: row["Regrouper par Galerie Photos"],
-      localite: row["Localité"],
-      quartier: row["Quartier"],
-      codePostal: row["Code postal"],
-      typeVoie: row["Type de voie"],
-      adresse: row["Adresse"],
-      numero: row["Numéro"],
-      escalier: row["Escalier"],
-      etage: row["Étage"],
-      porte: row["Porte"],
-      nomProprietaire: row["Propriétaire"],
-      numeroRegistreTouristique: row["Numéro de registre touristique"],
-      commentairesAdditionnels: row["Commentaires additionnels"],
-      referenceCadastrale: row["Référence cadastrale"],
-    };
-
-    await Accommodation.updateOne(
-      { code: data.code, owner: owner._id },
-      { $set: data },
-      { upsert: true }
+    // Lecture du CSV avec ; comme séparateur
+    const rows = await parseCsvBuffer(
+      buffer,
+      (row) => {
+        if (!row['Id Propriétaires'] || !row['Code']) return null;
+        return {
+          ownerId: row['Id Propriétaires'],
+          code: row['Code'],
+          etat: row['État'],
+          logement: row['Logement'],
+          type: row['Type'],
+          capaciteTotale: parseInt(row['Capacité totale'], 10) || 0,
+          tarif: row['Tarif'],
+          edifice: row['Édifice'],
+          regrouperParGalerie: row['Regrouper par Galerie Photos'],
+          localite: row['Localité'],
+          quartier: row['Quartier'],
+          codePostal: row['Code postal'],
+          typeVoie: row['Type de voie'],
+          adresse: row['Adresse'],
+          numero: row['Numéro'],
+          escalier: row['Escalier'],
+          etage: row['Étage'],
+          porte: row['Porte'],
+          nomProprietaire: row['Propriétaire'],
+          numeroRegistreTouristique: row['Numéro de registre touristique'],
+          commentairesAdditionnels: row['Commentaires additionnels'],
+          referenceCadastrale: row['Référence cadastrale'],
+        };
+      },
+      ','
     );
 
-    imported++;
-  }
+    // Filtrer les lignes nulles
+    const validRows = rows.filter(Boolean);
 
-  return NextResponse.json({ message: `${imported} logements importés ou mis à jour.` });
+    console.log(`[API] ${validRows.length} lignes parsées depuis le CSV. Exemple:`, validRows[0]);
+
+    let imported = 0;
+
+    for (const data of validRows) {
+      // Correction : on cherche l'owner avec le champ "id" (qui correspond à "Id Propriétaires" dans le CSV)
+      const owner = await Owner.findOne({ id: data.ownerId });
+
+      if (!owner) {
+        console.log(`[API] ❌ Propriétaire NON TROUVÉ pour id:`, data.ownerId);
+        continue;
+      }
+
+      // upsert du logement lié à ce propriétaire
+      const result = await Accommodation.updateOne(
+        { code: data.code, owner: owner._id },
+        {
+          $set: {
+            owner: owner._id,
+            etat: data.etat,
+            logement: data.logement,
+            type: data.type,
+            capaciteTotale: data.capaciteTotale,
+            tarif: data.tarif,
+            edifice: data.edifice,
+            regrouperParGalerie: data.regrouperParGalerie,
+            localite: data.localite,
+            quartier: data.quartier,
+            codePostal: data.codePostal,
+            typeVoie: data.typeVoie,
+            adresse: data.adresse,
+            numero: data.numero,
+            escalier: data.escalier,
+            etage: data.etage,
+            porte: data.porte,
+            nomProprietaire: data.nomProprietaire,
+            numeroRegistreTouristique: data.numeroRegistreTouristique,
+            commentairesAdditionnels: data.commentairesAdditionnels,
+            referenceCadastrale: data.referenceCadastrale,
+          }
+        },
+        { upsert: true }
+      );
+
+      console.log('[API] Résultat upsert:', result);
+      imported++;
+    }
+
+    console.log(`[API] FIN : ${imported} logements importés ou mis à jour.`);
+    return NextResponse.json({ message: `${imported} logements importés ou mis à jour.` });
+  } catch (err) {
+    console.error('❌ Erreur dans /api/upload-accommodations :', err);
+    return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 });
+  }
 }

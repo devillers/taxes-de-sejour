@@ -1,16 +1,22 @@
+//app/models/owners.js
 import mongoose from "mongoose";
 
 const ownerSchema = new mongoose.Schema({
-  id: String,
-  prenom: String,
-  nom: String,
-  adresse: String,
-  codePostal: String,
-  ville: String,
-  email: String,
-  telephone: String,
-  siret: String,
-  mandat: String,
+  id: {
+    type: String,
+    required: true,
+    unique: true,
+    trim: true,
+  },
+  prenom: { type: String, trim: true },
+  nom: { type: String, trim: true },
+  adresse: { type: String, trim: true },
+  codePostal: { type: String, trim: true },
+  ville: { type: String, trim: true },
+  email: { type: String, lowercase: true, trim: true },
+  telephone: { type: String, trim: true },
+  siret: { type: String, trim: true },
+  mandat: { type: String, trim: true },
 }, {
   timestamps: true,
 });
