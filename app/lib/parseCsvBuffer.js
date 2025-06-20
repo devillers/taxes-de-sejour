@@ -22,7 +22,7 @@ export async function parseCsvBuffer(
     delimiter,
     relax_column_count: true,
     skip_records_with_error: true,
-    from_line: 3,           // ← Commence à la 3e ligne (header CSV correct)
+    from_line: 2,           // ← Commence à la 2e ligne (1 ligne d'introduction)
   });
 
   const stream = Readable.from(buffer).pipe(parser);

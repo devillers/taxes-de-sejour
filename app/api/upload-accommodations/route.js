@@ -57,7 +57,7 @@ export async function POST(req) {
           referenceCadastrale: row['Référence cadastrale'],
         };
       },
-      ','
+      ';'
     );
 
     // Filtrer les lignes nulles
