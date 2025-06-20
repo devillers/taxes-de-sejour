@@ -1,7 +1,7 @@
 export const dynamic = 'force-dynamic';
 
-import { connectDb } from '@/lib/db';
-import Accommodation from '@/models/accomodations';
+import { connectDb } from '../lib/db';
+import Accommodation from '../models/accomodations';
 
 export default async function VersementPage() {
   await connectDb();
