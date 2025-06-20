@@ -1,4 +1,4 @@
-//app/models/accomodation.js
+// app/models/accommodations.js
 
 import mongoose from 'mongoose';
 
