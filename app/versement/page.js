@@ -1,6 +1,11 @@
 // app/versement/page.js
 export const dynamic = 'force-dynamic';
 
+<<<<<<< HEAD
+=======
+import { connectDb } from '@/lib/db';
+import Accommodation from '@/models/accommodations';
+>>>>>>> c14f92e7fdd00abeedbc0d90657167470b375580
 import VersementTable from './VersementTable';
 import { connectDb } from '../lib/db';
 import Accommodation from '../models/accomodations';

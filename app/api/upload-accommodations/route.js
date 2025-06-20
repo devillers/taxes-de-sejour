@@ -2,7 +2,7 @@
 
 import { NextResponse } from 'next/server';
 import { connectDb } from '../../lib/db';
-import Accommodation from '../../models/accomodations';
+import Accommodation from '../../models/accommodations';
 import Owner from '../../models/owners';
 import { parseCsvBuffer } from '../../lib/parseCsvBuffer';
 
