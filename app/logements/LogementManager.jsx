@@ -77,25 +77,57 @@ export default function LogementManager({ initialAccommodations }) {
       <table className="min-w-full border text-xsgit ">
         <thead className="bg-gray-100">
           <tr>
+            <th className="border px-2 py-1">N°</th>
             <th className="border px-2 py-1">ownerId</th>
+            <th className="border px-2 py-1">Nom propriétaire</th>
             <th className="border px-2 py-1">Logement</th>
             <th className="border px-2 py-1">Adresse</th>
-            <th className="border px-2 py-1">Code postal</th>
             <th className="border px-2 py-1">Localité</th>
+            <th className="border px-2 py-1">Code postal</th>
+            <th className="border px-2 py-1">N° registre touristique</th>
+            <th className="border px-2 py-1">Classement</th>
+            <th className="border px-2 py-1">Prix nuitée</th>
+            <th className="border px-2 py-1">Début séjour</th>
+            <th className="border px-2 py-1">Durée</th>
+            <th className="border px-2 py-1">Nb pers.</th>
+            <th className="border px-2 py-1">Nb nuitées</th>
+            <th className="border px-2 py-1">Tarif taxe</th>
+            <th className="border px-2 py-1">Montant taxe</th>
             <th className="border px-2 py-1">Actions</th>
           </tr>
         </thead>
         <tbody>
-          {accommodations.map((a) => (
+          {accommodations.map((a, idx) => (
             <tr key={a._id} className="border-t">
+              <td className="border px-2 py-1 text-center">{idx + 1}</td>
               <td className="border px-2 py-1">{a.ownerId || a.owner?.id || a.owner}</td>
+              <td className="border px-2 py-1">
+                {a.nomProprietaire || `${a.owner?.prenom || ''} ${a.owner?.nom || ''}`.trim()}
+              </td>
               <td className="border px-2 py-1">{a.logement}</td>
-              <td className="border px-2 py-1">{a.adresse}</td>
-              <td className="border px-2 py-1">{a.codePostal}</td>
+              <td className="border px-2 py-1">{[a.numero, a.adresse].filter(Boolean).join(' ')}</td>
               <td className="border px-2 py-1">{a.localite}</td>
+              <td className="border px-2 py-1">{a.codePostal}</td>
+              <td className="border px-2 py-1">{a.numeroRegistreTouristique}</td>
+              <td className="border px-2 py-1">
+                {a.numeroRegistreTouristique ? 'Classé' : 'Non classé'}
+              </td>
+              <td className="border px-2 py-1">{a.prixNuitee ?? ''}</td>
+              <td className="border px-2 py-1">
+                {a.sejourDebut ? new Date(a.sejourDebut).toLocaleDateString() : ''}
+              </td>
+              <td className="border px-2 py-1">{a.sejourDuree ?? ''}</td>
+              <td className="border px-2 py-1">{a.nbPersonnes ?? ''}</td>
+              <td className="border px-2 py-1">{a.nbNuitees ?? ''}</td>
+              <td className="border px-2 py-1">{a.tarifUnitaireTaxe ?? ''}</td>
+              <td className="border px-2 py-1">{a.montantTaxe ?? ''}</td>
               <td className="border px-2 py-1 space-x-2">
-                <button type="button" className="text-blue-600" onClick={() => handleEdit(a)}>Edit</button>
-                <button type="button" className="text-red-600" onClick={() => handleDelete(a._id)}>Delete</button>
+                <button type="button" className="text-blue-600" onClick={() => handleEdit(a)}>
+                  Edit
+                </button>
+                <button type="button" className="text-red-600" onClick={() => handleDelete(a._id)}>
+                  Delete
+                </button>
               </td>
             </tr>
           ))}
