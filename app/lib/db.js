@@ -2,11 +2,9 @@
 import mongoose from 'mongoose';
 
 const MONGODB_URI = process.env.MONGODB_URI;
-
 if (!MONGODB_URI) throw new Error('❌ MONGODB_URI not defined in .env');
 
 let cached = global.mongoose;
-
 if (!cached) {
   cached = global.mongoose = { conn: null, promise: null };
 }
@@ -16,14 +14,14 @@ export async function connectDb() {
 
   if (!cached.promise) {
     cached.promise = mongoose.connect(MONGODB_URI, {
-      dbName: 'taxes-de-sejour', // adapte si besoin
+      dbName: 'taxes-de-sejour',
       bufferCommands: false,
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    }).then((mongoose) => {
+    })
+    .then((mongoose) => {
       console.log('[MongoDB] ✅ Connecté avec succès');
       return mongoose;
-    }).catch((err) => {
+    })
+    .catch((err) => {
       console.error('[MongoDB] ❌ Échec de connexion :', err);
       throw err;
     });

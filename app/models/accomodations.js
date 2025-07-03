@@ -1,6 +1,8 @@
 // app/models/accommodations.js
 
 import mongoose from 'mongoose';
+import './owners.js'; // 👈 Ceci enregistre le modèle Owner dans Mongoose
+
 
 const accommodationSchema = new mongoose.Schema({
   owner: { type: mongoose.Schema.Types.ObjectId, ref: 'Owner' }, // <--- clé étrangère

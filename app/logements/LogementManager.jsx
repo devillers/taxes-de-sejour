@@ -74,7 +74,7 @@ export default function LogementManager({ initialAccommodations }) {
           </button>
         )}
       </form>
-      <table className="min-w-full border text-xsgit ">
+      <table className="min-w-full border text-[10px] ">
         <thead className="bg-gray-100">
           <tr>
             <th className="border px-2 py-1">N°</th>

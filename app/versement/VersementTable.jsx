@@ -24,7 +24,7 @@ export default function VersementTable({ rows }) {
         className="border px-2 py-1 mb-4"
       />
       <p className="mb-4">Nombre de logements: {filtered.length}</p>
-      <table className="min-w-full border text-sm">
+      <table className="min-w-full text-[10px]">
         <thead className="bg-gray-100">
           <tr>
             <th className="border px-2 py-1">N°</th>
