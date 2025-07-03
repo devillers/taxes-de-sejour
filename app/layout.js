@@ -27,8 +27,8 @@ export default function RootLayout({ children }) {
           <Link href="/" className="mr-4 hover:underline">
             Accueil
           </Link>
-          <Link href="/taxe-de-sejour" className="mr-4 hover:underline">
-            Taxe de Séjour
+          <Link href="/datas" className="mr-4 hover:underline">
+            Données
           </Link>
           <Link href="/versement" className="mr-4 hover:underline">
             Versement

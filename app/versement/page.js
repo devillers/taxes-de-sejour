@@ -41,7 +41,7 @@ export default async function VersementPage() {
 
   return (
     <div className="p-8">
-      <h1 className="text-2xl font-bold mb-4">Logements à reverser</h1>
+      <h1 className="text-2xl font-bold mb-4">Taxe de séjour à reverser par commune </h1>
       {rows.length > 0 ? (
         <VersementByLocalite rows={rows} localites={localites} />
       ) : (
