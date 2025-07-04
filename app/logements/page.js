@@ -7,6 +7,7 @@ import Accommodation from '../models/accomodations';
 import LogementManager from './LogementManager';
 
 export default async function LogementsPage() {
+<<<<<<< HEAD
   // 1) Connect to database
   await connectDb();
 
@@ -37,12 +38,49 @@ export default async function LogementsPage() {
       updatedAt: new Date(updatedAt).toISOString(),
     };
   });
+=======
+  try {
+    // 1) Ensure DB is connected
+    await connectDb();
 
-  return (
-    <div className="p-8">
-      <h1 className="text-2xl font-bold mb-4">Gestion des logements</h1>
-      {/* Now safe to pass only plain JS objects */}
-      <LogementManager initialAccommodations={accommodations} />
-    </div>
-  );
+    // 2) Fetch as plain JS objects
+    const raw = await Accommodation.find()
+      .populate('owner')
+      .lean();
+
+    // 3) Convert ObjectIds and Dates into strings/ISO formats
+    const accommodations = raw.map(doc => ({
+      ...doc,
+      _id: doc._id.toString(),
+      localite: doc.localite,
+      ownerId: doc.owner ? doc.owner.id : null,
+      owner: doc.owner
+        ? {
+            ...doc.owner,
+            _id: doc.owner._id.toString(),
+            createdAt: doc.owner.createdAt.toISOString(),
+            updatedAt: doc.owner.updatedAt.toISOString(),
+          }
+        : null,
+      createdAt: doc.createdAt.toISOString(),
+      updatedAt: doc.updatedAt.toISOString(),
+    }));
+>>>>>>> 46fb1caaee79111565319f70a81b12be09983fd4
+
+    return (
+      <div className="p-8">
+        <h1 className="text-2xl font-bold mb-4">Gestion des logements</h1>
+        {/* Now safe to pass only plain JS objects */}
+        <LogementManager initialAccommodations={accommodations} />
+      </div>
+    );
+  } catch (err) {
+    console.error('[logements] Error fetching accommodations:', err);
+    return (
+      <div className="p-8">
+        <h1 className="text-2xl font-bold mb-4">Gestion des logements</h1>
+        <p className="text-red-600">Impossible de récupérer les logements.</p>
+      </div>
+    );
+  }
 }
