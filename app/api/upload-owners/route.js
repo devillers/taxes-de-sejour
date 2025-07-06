@@ -14,11 +14,11 @@ export const config = {
 export async function POST(req) {
   try {
     await connectDb();
-    console.log('[API] DB connected');
+    console.log('[API] DB connected (owners)');
 
     const formData = await req.formData();
     const file = formData.get('file');
-
+ const delimiter = formData.get("delimiter") || ";";
     if (!file) {
       console.log('[API] No file uploaded');
       return NextResponse.json({ error: 'Aucun fichier envoyé' }, { status: 400 });
@@ -26,8 +26,7 @@ export async function POST(req) {
 
     const buffer = Buffer.from(await file.arrayBuffer());
 
-    // ⚠️ Vérifie si ton CSV est séparé par des virgules (,) ou des points-virgules (;)
-    // Par défaut, Excel FR exporte avec des ;
+    
     const rows = await parseCsvBuffer(
       buffer,
       (row) => {
@@ -46,7 +45,7 @@ export async function POST(req) {
           mandat: row["Mandat"],
         };
       },
-      ',' // ← Mets ';' si Excel/LibreOffice, sinon ',' pour CSV US/Google Sheets
+         delimiter
     );
 
     // Filtrer les éventuelles lignes nulles

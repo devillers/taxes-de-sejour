@@ -3,7 +3,7 @@ export const dynamic = 'force-dynamic';
 
 import VersementByLocalite from './VersementByLocalite';
 import { connectDb } from '../lib/db';
-import Accommodation from '../models/accomodations';
+import Accommodation from '../models/properties';
 
 export default async function VersementPage() {
   await connectDb();

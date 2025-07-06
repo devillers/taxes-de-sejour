@@ -3,7 +3,7 @@
 import { NextResponse } from 'next/server';
 import { connectDb } from '../../lib/db';
 import Owner from '../../models/owners';
-import Accommodation from '../../models/accomodations';
+import Accommodation from '../../models/properties';
 
 export async function GET() {
   await connectDb();

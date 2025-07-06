@@ -1,9 +1,9 @@
-//app/taxe-de-sejour/page.js
+// app/datas/page.js
 
 'use client';
 
 import { useState } from 'react';
-import CSVUploader from '@/components/CSVUploader';
+import CSVUploader from '../../components/CSVUploader';
 
 export default function ImportPage() {
   const [ownerFile, setOwnerFile] = useState(null);
@@ -14,17 +14,26 @@ export default function ImportPage() {
   const [taxMsg, setTaxMsg] = useState('');
 
   const handleUpload = async (file, endpoint, setMsg) => {
+    console.log(`[UI] handleUpload called for endpoint "${endpoint}"`);
     if (!file) {
+      console.warn('[UI] Aucun fichier sélectionné');
       setMsg('Veuillez sélectionner un fichier CSV.');
       return;
     }
+    console.log(`[UI] Fichier à uploader: name=${file.name}, size=${file.size} bytes`);
+
     const formData = new FormData();
     formData.append('file', file);
+
     try {
+      console.log('[UI] Lancement du fetch vers', endpoint);
       const res = await fetch(endpoint, { method: 'POST', body: formData });
+      console.log('[UI] Statut de la réponse:', res.status);
       const json = await res.json();
+      console.log('[UI] Corps JSON reçu:', json);
       setMsg(json.message || json.error);
-    } catch {
+    } catch (err) {
+      console.error('[UI] Erreur lors de l’envoi du fichier:', err);
       setMsg('Erreur lors de l’envoi du fichier.');
     }
   };
@@ -43,7 +52,7 @@ export default function ImportPage() {
         <CSVUploader
           id="owner-upload"
           fileName={ownerFile?.name}
-          onFileSelect={setOwnerFile}
+          onFileSelect={(f) => { console.log('[UI] ownerFile sélectionné:', f); setOwnerFile(f); }}
         />
         <button
           onClick={() =>
@@ -66,15 +75,11 @@ export default function ImportPage() {
         <CSVUploader
           id="accom-upload"
           fileName={accomFile?.name}
-          onFileSelect={setAccomFile}
+          onFileSelect={(f) => { console.log('[UI] accomFile sélectionné:', f); setAccomFile(f); }}
         />
         <button
           onClick={() =>
-            handleUpload(
-              accomFile,
-              '/api/upload-accommodations',
-              setAccomMsg
-            )
+            handleUpload(accomFile, '/api/upload-accommodations', setAccomMsg)
           }
           className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
         >
@@ -87,19 +92,17 @@ export default function ImportPage() {
 
       {/* 3. Taxes de séjour */}
       <div>
-        <h2 className="text-xl font-semibold mb-2">3. Importer la taxe de séjour</h2>
+        <h2 className="text-xl font-semibold mb-2">
+          3. Importer la taxe de séjour
+        </h2>
         <CSVUploader
           id="tax-upload"
           fileName={taxFile?.name}
-          onFileSelect={setTaxFile}
+          onFileSelect={(f) => { console.log('[UI] taxFile sélectionné:', f); setTaxFile(f); }}
         />
         <button
           onClick={() =>
-            handleUpload(
-              taxFile,
-              '/api/upload-taxes',
-              setTaxMsg
-            )
+            handleUpload(taxFile, '/api/upload-taxes', setTaxMsg)
           }
           className="mt-4 px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700"
         >

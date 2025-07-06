@@ -1,18 +1,17 @@
-
 // app/api/accommodations/[id]/route.js
 
-import { NextResponse } from 'next/server';
-import { connectDb } from '../../../lib/db';
-import Accommodation from '../../../models/accommodations';
+import { NextResponse } from 'next/server'
+import { connectDb } from '../../../lib/db'
+import Accommodation from '../../../models/properties'
 
-export async function GET(req, context) {
-  const { params } = await context;
-  await connectDb();
+export async function GET(request, { params }) {
+  await connectDb()
+  const doc = await Accommodation.findById(params.id).lean()
+  if (!doc) {
+    return NextResponse.json({ error: 'Not found' }, { status: 404 })
+  }
 
-  const doc = await Accommodation.findById(params.id).lean();
-  if (!doc) return NextResponse.json({ error: 'Not found' }, { status: 404 });
-
-  const response = {
+  return NextResponse.json({
     _id: doc._id.toString(),
     ownerId: doc.owner,
     nomProprietaire: doc.nomProprietaire || '',
@@ -23,7 +22,7 @@ export async function GET(req, context) {
     numeroRegistreTouristique: doc.numeroRegistreTouristique || '',
     classement: doc.numeroRegistreTouristique ? 'Classé' : 'Non classé',
     prixNuitee: doc.prixNuitee ?? null,
-    sejourDebut: doc.sejourDebut ? doc.sejourDebut.toISOString() : null,
+    sejourDebut: doc.sejourDebut?.toISOString() ?? null,
     sejourDuree: doc.sejourDuree ?? null,
     nbPersonnes: doc.nbPersonnes ?? null,
     nbNuitees: doc.nbNuitees ?? null,
@@ -31,56 +30,46 @@ export async function GET(req, context) {
     montantTaxe: doc.montantTaxe ?? null,
     createdAt: doc.createdAt.toISOString(),
     updatedAt: doc.updatedAt.toISOString(),
-  };
-
-  return NextResponse.json(response);
+  })
 }
 
-export async function PUT(req, context) {
-  try {
-    const { params } = await context;
-    await connectDb();
-    const data = await req.json();
+export async function PUT(request, { params }) {
+  await connectDb()
+  const data = await request.json()
+  data.owner = Number(data.owner)
 
-    const updatedDoc = await Accommodation.findByIdAndUpdate(params.id, data, { new: true }).lean();
-    if (!updatedDoc) return NextResponse.json({ error: 'Not found' }, { status: 404 });
+  const updated = await Accommodation
+    .findByIdAndUpdate(params.id, data, { new: true })
+    .lean()
 
-    const response = {
-      _id: updatedDoc._id.toString(),
-      ownerId: updatedDoc.owner,
-      nomProprietaire: updatedDoc.nomProprietaire,
-      logement: updatedDoc.logement,
-      adresse: updatedDoc.adresse,
-      localite: updatedDoc.localite,
-      codePostal: updatedDoc.codePostal,
-      numeroRegistreTouristique: updatedDoc.numeroRegistreTouristique,
-      classement: updatedDoc.numeroRegistreTouristique ? 'Classé' : 'Non classé',
-      prixNuitee: updatedDoc.prixNuitee,
-      sejourDebut: updatedDoc.sejourDebut ? updatedDoc.sejourDebut.toISOString() : null,
-      sejourDuree: updatedDoc.sejourDuree,
-      nbPersonnes: updatedDoc.nbPersonnes,
-      nbNuitees: updatedDoc.nbNuitees,
-      tarifUnitaireTaxe: updatedDoc.tarifUnitaireTaxe,
-      montantTaxe: updatedDoc.montantTaxe,
-      createdAt: updatedDoc.createdAt.toISOString(),
-      updatedAt: updatedDoc.updatedAt.toISOString(),
-    };
-
-    return NextResponse.json(response);
-  } catch (err) {
-    console.error('Error updating accommodation:', err);
-    return NextResponse.json({ error: 'Server error' }, { status: 500 });
+  if (!updated) {
+    return NextResponse.json({ error: 'Not found' }, { status: 404 })
   }
+
+  return NextResponse.json({
+    _id: updated._id.toString(),
+    ownerId: updated.owner,
+    nomProprietaire: updated.nomProprietaire || '',
+    logement: updated.logement || '',
+    adresse: updated.adresse || '',
+    localite: updated.localite || '',
+    codePostal: updated.codePostal || '',
+    numeroRegistreTouristique: updated.numeroRegistreTouristique || '',
+    classement: updated.numeroRegistreTouristique ? 'Classé' : 'Non classé',
+    prixNuitee: updated.prixNuitee ?? null,
+    sejourDebut: updated.sejourDebut?.toISOString() ?? null,
+    sejourDuree: updated.sejourDuree ?? null,
+    nbPersonnes: updated.nbPersonnes ?? null,
+    nbNuitees: updated.nbNuitees ?? null,
+    tarifUnitaireTaxe: updated.tarifUnitaireTaxe ?? null,
+    montantTaxe: updated.montantTaxe ?? null,
+    createdAt: updated.createdAt.toISOString(),
+    updatedAt: updated.updatedAt.toISOString(),
+  })
 }
 
-export async function DELETE(req, context) {
-  try {
-    const { params } = await context;
-    await connectDb();
-    await Accommodation.findByIdAndDelete(params.id);
-    return NextResponse.json({ message: 'Deleted' });
-  } catch (err) {
-    console.error('Error deleting accommodation:', err);
-    return NextResponse.json({ error: 'Server error' }, { status: 500 });
-  }
+export async function DELETE(request, { params }) {
+  await connectDb()
+  await Accommodation.findByIdAndDelete(params.id)
+  return NextResponse.json({ message: 'Deleted' })
 }

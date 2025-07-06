@@ -1,31 +1,27 @@
-// app/page.js
+/* app/page.jsx */
+import React from 'react';
+import { getStats } from './lib/data';
 
-export const dynamic = 'force-dynamic'; // pour s'assurer du rendu à chaque requête
-
-async function getStats() {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || ''}/api/stats`, {
-    cache: 'no-store',
-  });
-
-  if (!res.ok) {
-    return { ownerCount: '-', accommodationCount: '-' };
-  }
-
-  return res.json();
-}
-
-export default async function Home() {
-  const { ownerCount, accommodationCount } = await getStats();
+export default function HomePage() {
+  const { ownersCount, accommodationsCount, totalTaxes } = getStats();
 
   return (
-    <div className="p-8">
-      <h1 className="text-2xl font-bold mb-4">Bienvenue sur Taxes de séjour</h1>
-      <p>Utilisez le menu pour accéder au calcul de la taxe de séjour.</p>
-
-      <div className="mt-6">
-        <p className="text-lg">👤 Propriétaires enregistrés : <strong>{ownerCount}</strong></p>
-        <p className="text-lg">🏠 Logements enregistrés : <strong>{accommodationCount}</strong></p>
+    <main className="min-h-screen  p-8 max-w-5xl mx-auto">
+      <h1 className="text-3xl font-light mb-6">Tableau de bord</h1>
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+        <div className="bg-white shadow-lg rounded-2xl p-6">
+          <h2 className="text-xl font-thin mb-2">Propriétaires</h2>
+          <p className="text-5xl font-light text-indigo-600">{ownersCount}</p>
+        </div>
+        <div className="bg-white shadow-lg rounded-2xl p-6">
+          <h2 className="text-xl font-thin mb-2">Logements</h2>
+          <p className="text-5xl font-light text-indigo-600">{accommodationsCount}</p>
+        </div>
+        <div className="bg-white shadow-lg rounded-2xl p-6">
+          <h2 className="text-xl font-thin mb-2">Total Taxe de séjour</h2>
+          <p className="text-5xl font-light text-indigo-600">{totalTaxes.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' })}</p>
+        </div>
       </div>
-    </div>
+    </main>
   );
 }

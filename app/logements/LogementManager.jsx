@@ -1,114 +1,117 @@
-"use client";
-import { useState } from "react";
-import FormattedDate from "../../components/FormattedDate.js ";
-import ConfirmModal from "../../components/ConfirmModal";
+
+//app/logements/LogmentManager.jsx
+'use client';
+
+import { useState } from 'react';
+import FormattedDate from '../../components/FormattedDate';       // plus de “.js” ni d’espace
+import ConfirmModal from '../../components/ConfirmModal';
 
 export default function LogementManager({ initialAccommodations }) {
   const [accommodations, setAccommodations] = useState(initialAccommodations);
   const [form, setForm] = useState({
-    owner: "",
-    logement: "",
-    adresse: "",
-    codePostal: "",
-    localite: "",
+    owner: '',
+    nomProprietaire: '',
+    logement: '',
+    adresse: '',
+    localite: '',
+    codePostal: '',
+    numeroRegistreTouristique: '',
   });
   const [editingId, setEditingId] = useState(null);
 
-  const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
+  const handleChange = (e) =>
+    setForm(prev => ({ ...prev, [e.target.name]: e.target.value }));
 
   const resetForm = () => {
-    setForm({ owner: "", logement: "", adresse: "", codePostal: "", localite: "" });
+    setForm({
+      owner: '',
+      nomProprietaire: '',
+      logement: '',
+      adresse: '',
+      localite: '',
+      codePostal: '',
+      numeroRegistreTouristique: '',
+    });
     setEditingId(null);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    // Validation front-end de l'owner
-    if (!form.owner.match(/^[0-9a-fA-F]{24}$/)) {
-      alert("🔴 L’ownerId doit être un ObjectId MongoDB valide (24 hex). Merci de corriger.");
-      return;
-    }
-
-    const method = editingId ? "PUT" : "POST";
-    const url = editingId ? `/api/accommodations/${editingId}` : "/api/accommodations";
+    const payload = {
+      owner: Number(form.owner),
+      nomProprietaire: form.nomProprietaire.trim(),
+      logement: form.logement.trim(),
+      adresse: form.adresse.trim(),
+      localite: form.localite.trim(),
+      codePostal: form.codePostal.trim(),
+      numeroRegistreTouristique: form.numeroRegistreTouristique.trim(),
+    };
 
     try {
-      const res = await fetch(url, {
-        method,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
-      });
-      const data = await res.json();
-
-      if (res.ok) {
-        if (editingId) {
-          setAccommodations(accommodations.map((a) => (a._id === editingId ? data : a)));
-        } else {
-          setAccommodations([...accommodations, data]);
+      const res = await fetch(
+        editingId ? `/api/accommodations/${editingId}` : '/api/accommodations',
+        {
+          method: editingId ? 'PUT' : 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
         }
-        resetForm();
-      } else {
-        alert(`❌ Erreur API: ${data.error || data.message}`);
-      }
+      );
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || data.message);
+
+      setAccommodations(prev =>
+        editingId
+          ? prev.map(a => (a._id === editingId ? data : a))
+          : [...prev, data]
+      );
+      resetForm();
     } catch (err) {
-      console.error(err);
-      alert('❌ Erreur réseau ou serveur');
+      alert(`❌ ${err.message}`);
     }
   };
 
   const handleEdit = (a) => {
     setEditingId(a._id);
     setForm({
-      owner: a.ownerId || a.owner?._id || a.owner || "",
-      logement: a.logement || "",
-      adresse: a.adresse || "",
-      codePostal: a.codePostal || "",
-      localite: a.localite || "",
+      owner: String(a.ownerId),
+      nomProprietaire: a.nomProprietaire,
+      logement: a.logement,
+      adresse: a.adresse,
+      localite: a.localite,
+      codePostal: a.codePostal,
+      numeroRegistreTouristique: a.numeroRegistreTouristique,
     });
   };
 
   const handleDelete = async (id) => {
-    try {
-      const res = await fetch(`/api/accommodations/${id}`, { method: "DELETE" });
-      if (res.ok) {
-        setAccommodations(accommodations.filter((a) => a._id !== id));
-        if (editingId === id) resetForm();
-      }
-    } catch (err) {
-      console.error(err);
-      alert('❌ Erreur suppression');
-    }
+    if (!confirm('⚠️ Supprimer ce logement ?')) return;
+    await fetch(`/api/accommodations/${id}`, { method: 'DELETE' });
+    setAccommodations(prev => prev.filter(a => a._id !== id));
+    if (editingId === id) resetForm();
   };
 
   return (
     <div>
-      {/* Formulaire */}
       <form onSubmit={handleSubmit} className="mb-4 flex flex-wrap gap-2">
         {[
-          { name: 'owner', required: true, pattern: '^[0-9a-fA-F]{24}$' },
-          { name: 'logement' },
-          { name: 'adresse' },
-          { name: 'codePostal' },
-          { name: 'localite' }
-        ].map(({ name, required, pattern }) => (
+          { name: 'owner', placeholder: 'ownerId', type: 'number', required: true },
+          { name: 'nomProprietaire', placeholder: 'Nom propriétaire', type: 'text', required: true },
+          { name: 'logement', placeholder: 'Logement', type: 'text', required: true },
+          { name: 'adresse', placeholder: 'Adresse', type: 'text' },
+          { name: 'localite', placeholder: 'Localité', type: 'text' },
+          { name: 'codePostal', placeholder: 'Code postal', type: 'text' },
+          { name: 'numeroRegistreTouristique', placeholder: 'N° registre touristique', type: 'text' },
+        ].map(field => (
           <input
-            key={name}
-            name={name}
-            value={form[name]}
+            key={field.name}
+            {...field}
+            value={form[field.name]}
             onChange={handleChange}
-            placeholder={name}
-            className="border p-1 flex-1 min-w-[120px]"
-            {...(required ? { required: true } : {})}
-            {...(pattern ? { pattern } : {})}
+            className="border p-1 flex-1 min-w-[140px]"
           />
         ))}
-        <button
-          type="submit"
-          className="px-4 py-2 bg-blue-600 text-white rounded"
-        >
-          {editingId ? "Modifier" : "Ajouter"}
+        <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded">
+          {editingId ? 'Modifier' : 'Ajouter'}
         </button>
         {editingId && (
           <button
@@ -121,7 +124,6 @@ export default function LogementManager({ initialAccommodations }) {
         )}
       </form>
 
-      {/* Tableau */}
       <div className="overflow-x-auto">
         <table className="min-w-full border text-xs">
           <thead className="bg-gray-100">
@@ -135,13 +137,6 @@ export default function LogementManager({ initialAccommodations }) {
               <th className="border px-2 py-1">Code postal</th>
               <th className="border px-2 py-1">N° registre touristique</th>
               <th className="border px-2 py-1">Classement</th>
-              <th className="border px-2 py-1">Prix nuitée</th>
-              <th className="border px-2 py-1">Début séjour</th>
-              <th className="border px-2 py-1">Durée</th>
-              <th className="border px-2 py-1">Nb pers.</th>
-              <th className="border px-2 py-1">Nb nuitées</th>
-              <th className="border px-2 py-1">Tarif taxe</th>
-              <th className="border px-2 py-1">Montant taxe</th>
               <th className="border px-2 py-1">Actions</th>
             </tr>
           </thead>
@@ -149,35 +144,29 @@ export default function LogementManager({ initialAccommodations }) {
             {accommodations.map((a, idx) => (
               <tr key={a._id} className="border-t">
                 <td className="border px-2 py-1 text-center">{idx + 1}</td>
-                <td className="border px-2 py-1">{a.ownerId || a.owner?._id || a.owner}</td>
-                <td className="border px-2 py-1">
-                  {a.nomProprietaire || `${a.owner?.prenom || ''} ${a.owner?.nom || ''}`.trim()}
-                </td>
+                <td className="border px-2 py-1">{a.ownerId}</td>
+                <td className="border px-2 py-1">{a.nomProprietaire}</td>
                 <td className="border px-2 py-1">{a.logement}</td>
-                <td className="border px-2 py-1">{[a.numero, a.adresse].filter(Boolean).join(' ')}</td>
+                <td className="border px-2 py-1">{a.adresse}</td>
                 <td className="border px-2 py-1">{a.localite}</td>
                 <td className="border px-2 py-1">{a.codePostal}</td>
                 <td className="border px-2 py-1">{a.numeroRegistreTouristique}</td>
-                <td className="border px-2 py-1">{a.numeroRegistreTouristique ? 'Classé' : 'Non classé'}</td>
-                <td className="border px-2 py-1">{a.prixNuitee ?? ''}</td>
-                <td className="border px-2 py-1"><FormattedDate value={a.sejourDebut} /></td>
-                <td className="border px-2 py-1">{a.sejourDuree ?? ''}</td>
-                <td className="border px-2 py-1">{a.nbPersonnes ?? ''}</td>
-                <td className="border px-2 py-1">{a.nbNuitees ?? ''}</td>
-                <td className="border px-2 py-1">{a.tarifUnitaireTaxe ?? ''}</td>
-                <td className="border px-2 py-1">{a.montantTaxe ?? ''}</td>
-                <td className="border px-2 py-1 space-y-2">
+                <td className="border px-2 py-1">
+                  {a.numeroRegistreTouristique ? 'Classé' : 'Non classé'}
+                </td>
+                <td className="border px-2 py-1 space-x-2">
                   <button
                     onClick={() => handleEdit(a)}
-                    className="text-xs text-white bg-blue-500 hover:bg-blue-700 rounded-3xl w-full px-2 py-1"
+                    className="text-xs bg-blue-500 text-white px-2 py-1 rounded"
                   >
                     Edit
                   </button>
-                  <ConfirmModal
-                    label="delete"
-                    message="⚠️ Supprimer ce logement ?"
-                    onConfirm={() => handleDelete(a._id)}
-                  />
+                  <button
+                    onClick={() => handleDelete(a._id)}
+                    className="text-xs bg-red-500 text-white px-2 py-1 rounded"
+                  >
+                    Delete
+                  </button>
                 </td>
               </tr>
             ))}

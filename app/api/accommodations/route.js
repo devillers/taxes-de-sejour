@@ -1,16 +1,14 @@
 // app/api/accommodations/route.js
-
 import { NextResponse } from 'next/server';
 import { connectDb } from '../../lib/db';
-import Accommodation from '../../models/accommodations';
+import Accommodation from '../../models/properties';
 
 export async function GET() {
   await connectDb();
   const raw = await Accommodation.find().lean();
-
   const accommodations = raw.map(doc => ({
     _id: doc._id.toString(),
-    ownerId: doc.owner,
+    ownerId: doc.owner, // pure number
     nomProprietaire: doc.nomProprietaire || '',
     logement: doc.logement || '',
     adresse: doc.adresse || '',
@@ -28,7 +26,6 @@ export async function GET() {
     createdAt: doc.createdAt.toISOString(),
     updatedAt: doc.updatedAt.toISOString(),
   }));
-
   return NextResponse.json(accommodations);
 }
 
@@ -37,7 +34,6 @@ export async function POST(req) {
     await connectDb();
     const data = await req.json();
     const created = await Accommodation.create(data);
-
     const response = {
       _id: created._id.toString(),
       ownerId: created.owner,
@@ -58,10 +54,9 @@ export async function POST(req) {
       createdAt: created.createdAt.toISOString(),
       updatedAt: created.updatedAt.toISOString(),
     };
-
     return NextResponse.json(response, { status: 201 });
   } catch (err) {
-    console.error('Error creating accommodation:', err);
+    console.error(err);
     return NextResponse.json({ error: 'Server error' }, { status: 500 });
   }
 }
