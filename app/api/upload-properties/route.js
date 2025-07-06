@@ -1,44 +1,34 @@
 // app/api/upload-properties/route.js
+
 import { NextResponse } from 'next/server';
 import { connectDb } from '../../lib/db';
-import Property from '../../models/properties';
+import Property from '../../models/properties'; // <-- correction ici
 import { parseCsvBuffer } from '../../lib/parseCsvBuffer';
 
-export const config = { api: { bodyParser: false } };
-
-// Ajout d’un GET pour tester la route
-export async function GET() {
-  console.log('[API] GET /api/upload-properties appelée');
-  return NextResponse.json({ message: 'Endpoint upload-properties OK' });
-}
-
 export async function POST(req) {
-  console.log('[API] POST /api/upload-properties appelée');
+  console.log('[API][properties] POST appelé');
   try {
     await connectDb();
-    console.log('[API] DB connectée (properties)');
+    console.log('[API][properties] DB connectée');
 
     const formData = await req.formData();
-    console.log('[API] formData reçue, clés :', Array.from(formData.keys()));
-
     const file = formData.get('file');
     const delimiter = formData.get('delimiter') || ';';
-    console.log(`[API] Delimiter : "${delimiter}"`);
-
     if (!file) {
-      console.warn('[API] Aucun fichier dans formData');
+      console.warn('[API][properties] Aucun fichier dans formData');
       return NextResponse.json({ error: 'Aucun fichier envoyé' }, { status: 400 });
     }
-
     const buffer = Buffer.from(await file.arrayBuffer());
-    console.log('[API] Taille du buffer :', buffer.length);
+    console.log('[API][properties] buffer length:', buffer.length);
 
+    // Log des colonnes de la première ligne
+    let firstHeaderKeys = [];
     const rows = await parseCsvBuffer(buffer, row => {
-      // vérifier présence des champs essentiels
-      if (!row['Id Propriétaires'] || !row['Logement']) {
-        console.warn('[API] Lignes ignorée (champs manquants) :', row);
-        return null;
+      if (!firstHeaderKeys.length) {
+        firstHeaderKeys = Object.keys(row);
+        console.log('[API][properties] Colonnes détectées (première ligne):', firstHeaderKeys);
       }
+      if (!row['Id Propriétaires'] || !row['Logement']) return null;
       return {
         ownerId:                row['Id Propriétaires'],
         code:                   row['Code'],
@@ -63,14 +53,15 @@ export async function POST(req) {
         commentaires:           row['Commentaires additionnels'],
         referenceCadastrale:    row['Référence cadastrale'],
       };
-    }, delimiter);
+  }, ';', ['Id Propriétaires']);
 
-    const validRows = rows.filter(Boolean);
-    console.log(`[API] ${validRows.length} lignes valides parsées`);
+    if (rows[0]) {
+      console.log('[API][properties] Première ligne parsée:', rows[0]);
+    }
+    console.log(`[API][properties] ${rows.length} lignes valides parsées`);
 
     let count = 0;
-    for (const data of validRows) {
-      console.log('[API] Upsert propriété :', data.ownerId, data.logement);
+    for (const data of rows) {
       await Property.updateOne(
         { ownerId: data.ownerId, logement: data.logement },
         { $set: data },
@@ -78,12 +69,11 @@ export async function POST(req) {
       );
       count++;
     }
-
-    console.log(`[API] Import terminé : ${count} enregistrements`);
+    console.log(`[API][properties] Import terminé : ${count} enregistrements`);
     return NextResponse.json({ message: `${count} propriétés importées/mises à jour.` });
 
   } catch (e) {
-    console.error('[API] Erreur inattendue :', e);
+    console.error('[API][properties] Erreur inattendue :', e);
     return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 });
   }
 }

@@ -1,76 +1,85 @@
 // app/api/upload-owners/route.js
 
+// app/api/upload-owners/route.js
+
 import { NextResponse } from 'next/server';
 import { connectDb } from '../../lib/db';
 import Owner from '../../models/owners';
 import { parseCsvBuffer } from '../../lib/parseCsvBuffer';
 
-export const config = {
-  api: {
-    bodyParser: false,
-  },
-};
+// --- Helper pour nettoyer le buffer CSV avant le parsing
+function cleanCsvBuffer(buffer, headerKey = 'Id Propriétaires', sep = ';') {
+  const text = buffer.toString('utf8');
+  const lines = text.split(/\r?\n/);
+  let headerIdx = lines.findIndex(line =>
+    line.replace(/"/g, '').includes(headerKey)
+  );
+  if (headerIdx === -1) headerIdx = 0;
+  // Supprime les lignes vides
+  const useful = lines.slice(headerIdx).filter(l => l.trim().length > 0);
+  return Buffer.from(useful.join('\n'), 'utf8');
+}
+
+export const config = { api: { bodyParser: false } };
 
 export async function POST(req) {
+  console.log('[API][owners] POST appelé');
   try {
     await connectDb();
-    console.log('[API] DB connected (owners)');
-
+    console.log('[API][owners] DB connectée');
     const formData = await req.formData();
+    const delimiter = formData.get("delimiter") || ";"
     const file = formData.get('file');
- const delimiter = formData.get("delimiter") || ";";
     if (!file) {
-      console.log('[API] No file uploaded');
+      console.warn('[API][owners] Aucun fichier reçu');
       return NextResponse.json({ error: 'Aucun fichier envoyé' }, { status: 400 });
     }
-
     const buffer = Buffer.from(await file.arrayBuffer());
+    // Nettoyage du CSV (header & lignes vides)
+    const cleanedBuffer = cleanCsvBuffer(buffer, 'Id Propriétaires', ';');
 
-    
-    const rows = await parseCsvBuffer(
-      buffer,
-      (row) => {
-        if (!row["Id Propriétaires"] || !row["Nom"]) return null;
+    // Pour debug : affiche début du CSV “nettoyé”
+    console.log('[DEBUG CSV Owners clean début]:', cleanedBuffer.toString('utf8').slice(0, 500));
 
-        return {
-          id: row["Id Propriétaires"],         // 🟢 Le champ utilisé pour l'upsert (doit exister dans le modèle Owner)
-          prenom: row["Prénom"],
-          nom: row["Nom"],
-          adresse: row["Adresse"],
-          codePostal: row["Code postal"],
-          ville: row["Ville"],
-          email: row["E-mail"],
-          telephone: row["Téléphone"],
-          siret: row["SIRET"],
-          mandat: row["Mandat"],
-        };
-      },
-         delimiter
-    );
+    let firstHeaderKeys = [];
+    const rows = await parseCsvBuffer(cleanedBuffer, row => {
+      if (!firstHeaderKeys.length) {
+        firstHeaderKeys = Object.keys(row);
+        console.log('[API][owners] 🔎 Colonnes détectées (première ligne):', firstHeaderKeys);
+      }
+      if (!row['Id Propriétaires'] || !row['Id Propriétaires'].trim()) return null;
+      return {
+        ownerId:    row['Id Propriétaires']?.trim(),
+        prenom:     row['Prénom']?.trim() || '',
+        nom:        row['Nom']?.trim() || '',
+        adresse:    row['Adresse']?.trim() || '',
+        codePostal: row['Code postal']?.trim() || '',
+        ville:      row['Ville']?.trim() || '',
+        email:      row['E-mail']?.trim() || '',
+        telephone:  row['Téléphone']?.trim() || '',
+        siret:      row['SIRET']?.trim() || '',
+        mandat:     row['Mandat']?.trim() || ''
+      };
+    }, ';');
 
-    // Filtrer les éventuelles lignes nulles
-    const validRows = rows.filter(Boolean);
-    console.log(`[API] ${validRows.length} propriétaires parsés, exemple:`, validRows[0]);
+    if (rows[0]) {
+      console.log('[API][owners] Première ligne parsée:', rows[0]);
+    }
+    console.log('[API][owners] Lignes valides:', rows.length);
 
-    let imported = 0;
-
-    for (const ownerData of validRows) {
-      // log ownerData pour debug si souci
-      console.log('[API] Upsert owner:', ownerData);
-
+    let count = 0;
+    for (const data of rows) {
       await Owner.updateOne(
-        { id: ownerData.id },
-        { $set: ownerData },
+        { ownerId: data.ownerId },
+        { $set: data },
         { upsert: true }
       );
-      imported++;
+      count++;
     }
-
-    console.log(`[API] FIN : ${imported} propriétaires importés ou mis à jour.`);
-    return NextResponse.json({ message: `${imported} propriétaires importés ou mis à jour.` });
-
-  } catch (err) {
-    console.error('❌ Erreur dans /api/upload-owners :', err);
+    console.log('[API][owners] Import terminé, total:', count);
+    return NextResponse.json({ message: `${count} propriétaires importés ou mis à jour.` });
+  } catch (e) {
+    console.error('[API][owners] Erreur:', e);
     return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 });
   }
 }

@@ -1,8 +1,8 @@
-//app/models/owners.js
+// app/models/owners.js
 import mongoose from "mongoose";
 
 const ownerSchema = new mongoose.Schema({
-  id: {
+  ownerId: {
     type: String,
     required: true,
     unique: true,
@@ -15,13 +15,9 @@ const ownerSchema = new mongoose.Schema({
   ville: { type: String, trim: true },
   localite: { type: String, trim: true },
   email: { type: String, lowercase: true, trim: true },
-  // Supporte la colonne "E-mail" du fichier CSV original
-  'E-mail': { type: String, lowercase: true, trim: true },
   telephone: { type: String, trim: true },
   siret: { type: String, trim: true },
   mandat: { type: String, trim: true },
-}, {
-  timestamps: true,
-});
+}, { timestamps: true });
 
 export default mongoose.models.Owner || mongoose.model("Owner", ownerSchema);
