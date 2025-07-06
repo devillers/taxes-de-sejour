@@ -1,4 +1,4 @@
-// app/api/upload-accommodations/route.js
+// app/api/upload-properties/route.js
 import { NextResponse } from 'next/server';
 import { connectDb } from '../../lib/db';
 import Property from '../../models/properties';
@@ -8,15 +8,15 @@ export const config = { api: { bodyParser: false } };
 
 // Ajout d’un GET pour tester la route
 export async function GET() {
-  console.log('[API] GET /api/upload-accommodations appelée');
-  return NextResponse.json({ message: 'Endpoint upload-accommodations OK' });
+  console.log('[API] GET /api/upload-properties appelée');
+  return NextResponse.json({ message: 'Endpoint upload-properties OK' });
 }
 
 export async function POST(req) {
-  console.log('[API] POST /api/upload-accommodations appelée');
+  console.log('[API] POST /api/upload-properties appelée');
   try {
     await connectDb();
-    console.log('[API] DB connectée (accommodations)');
+    console.log('[API] DB connectée (properties)');
 
     const formData = await req.formData();
     console.log('[API] formData reçue, clés :', Array.from(formData.keys()));
@@ -87,4 +87,3 @@ export async function POST(req) {
     return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 });
   }
 }
-  
