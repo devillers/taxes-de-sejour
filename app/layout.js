@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import "./globals.css";
 
 export default function RootLayout({ children }) {
@@ -7,8 +8,16 @@ export default function RootLayout({ children }) {
       <body suppressHydrationWarning>
         <nav className="bg-white shadow-md mx-auto  px-6 py-3 flex flex-col sm:flex-row items-center justify-around sticky top-0 z-40 backdrop-blur bg-opacity-90 ">
           {/* Logo */}
-          <div className="text-xl font-bold tracking-tight text-[#bd9254] mb-2 sm:mb-0">
-            <Link href="/">CareConcierge</Link>
+          <div className="flex items-center gap-2 text-xl font-light tracking-tight text-[#bd9254] mb-2 sm:mb-0">
+            <Image
+              src="/pin.png"
+              alt="Logo Pin"
+              width={28}
+              height={28}
+              className="rounded-full"
+              priority
+            />
+            <Link href="/">Care Concierge</Link>
           </div>
           {/* Menu */}
           <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm font-thin">
