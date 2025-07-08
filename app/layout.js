@@ -5,21 +5,46 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body suppressHydrationWarning>
-        <nav className="p-4 bg-gray-100 text-black border-b mb-4">
-          <Link href="/" className="mr-4 hover:underline">
-            Accueil
-          </Link>
-          <Link href="/datas" className="mr-4 hover:underline">
-            Données
-          </Link>
-          <Link href="/versement" className="mr-4 hover:underline">
-            Versement
-          </Link>
-          <Link href="/logements" className="hover:underline">
-            Logements
-          </Link>
+        <nav className="bg-white shadow-md mx-auto  px-6 py-3 flex flex-col sm:flex-row items-center justify-around sticky top-0 z-40 backdrop-blur bg-opacity-90 ">
+          {/* Logo */}
+          <div className="text-xl font-bold tracking-tight text-[#bd9254] mb-2 sm:mb-0">
+            <Link href="/">CareConcierge</Link>
+          </div>
+          {/* Menu */}
+          <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm font-thin">
+            <Link
+              href="/"
+              className="transition hover:text-[#bd9254] px-2 py-1 rounded"
+            >
+              Accueil
+            </Link>
+            <Link
+              href="/datas"
+              className="transition hover:text-[#bd9254] px-2 py-1 rounded"
+            >
+              Upload
+            </Link>
+            <Link
+              href="/taxes"
+              className="transition hover:text-[#bd9254] px-2 py-1 rounded"
+            >
+              Taxes de séjour
+            </Link>
+            <Link
+              href="/owners"
+              className="transition hover:text-[#bd9254] px-2 py-1 rounded"
+            >
+              Propriétaires
+            </Link>
+            <Link
+              href="/versement"
+              className="transition hover:text-[#bd9254] px-2 py-1 rounded"
+            >
+              Téléversement
+            </Link>
+          </div>
         </nav>
-        {children}
+        <main className="min-w-7xl mx-auto px-4">{children}</main>
       </body>
     </html>
   );

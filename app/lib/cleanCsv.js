@@ -1,28 +1,35 @@
-// cleanCsv.js
-export function cleanCsvBuffer(buffer, headerKey = 'Id Propriétaires', separator = ',') {
-  // Convertit le buffer en texte
-  const text = buffer.toString('utf8');
+// app/lib/cleanCsv.js
+/**
+ * Nettoie un buffer CSV pour ne garder que la partie à parser, en supprimant les pollutions éventuelles.
+ * - Enlève tous les guillemets
+ * - Commence à la ligne qui débute vraiment le header (Id Propriétaires,...)
+ * - Ignore toutes les lignes vides
+ * @param {Buffer} buffer
+ * @param {string} headerKey - ex: 'Id Propriétaires'
+ * @param {string} delimiter - ex: ';'
+ * @returns {Buffer}
+ */
+export function cleanCsv(buffer, headerKey = 'Id Propriétaires', delimiter = ';') {
+  let text = buffer.toString('utf8').replace(/"/g, '');
+
+  // Découpe en lignes
   const lines = text.split(/\r?\n/);
 
-  // 1. Cherche la première ligne contenant le headerKey (ex : 'Id Propriétaires', 'Réservation', etc)
-  let headerIndex = lines.findIndex(line =>
-    line.replace(/"/g, '').includes(headerKey)
+  // Cherche la 1ère ligne qui commence VRAIMENT par "Id Propriétaires" (header attendu)
+  let headerIdx = lines.findIndex(
+    line => line.trim().startsWith(headerKey)
   );
-  if (headerIndex === -1) headerIndex = 0; // fallback: tout garder
-
-  // 2. Garde uniquement header + lignes suivantes non vides
-  let usefulLines = lines.slice(headerIndex).filter(l => l.trim().length > 0);
-
-  // 3. Enlève les guillemets début/fin de champ, si séparateur = ','
-  if (separator === ',') {
-    usefulLines = usefulLines.map(line =>
-      line.split(/,(?=(?:[^"]*"[^"]*")*[^"]*$)/)
-        .map(field => field.replace(/^"(.*)"$/, '$1'))
-        .join(',')
-    );
+  if (headerIdx === -1) {
+    // Fallback : toute ligne contenant le header quelque part
+    headerIdx = lines.findIndex(line => line.includes(headerKey));
   }
-  // Si tu as besoin de gérer les points-virgules aussi (pas de guillemets), ignore cette étape.
+  if (headerIdx === -1) headerIdx = 0;
 
-  // 4. Retourne le buffer propre
-  return Buffer.from(usefulLines.join('\n'), 'utf8');
+  // Enlève toutes les lignes vides après le header
+  const useful = lines.slice(headerIdx).filter(l => l.trim().length > 0);
+
+  // (debug)
+  console.log('[CLEAN][PREVIEW_HEADER]', useful[0]);
+
+  return Buffer.from(useful.join('\n'), 'utf8');
 }

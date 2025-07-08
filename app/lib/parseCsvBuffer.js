@@ -1,27 +1,39 @@
 // app/lib/parseCsvBuffer.js
+
 import { parse } from 'csv-parse';
 import { Readable } from 'stream';
 
-export async function parseCsvBuffer(buffer, mapRow, delimiter = ';', headerKeywords = []) {
+function guessDelimiter(line) {
+  const delimiters = [',', ';', '\t', '|'];
+  let best = ',', bestCount = 0;
+  delimiters.forEach(d => {
+    const count = (line.match(new RegExp(`\\${d}`, 'g')) || []).length;
+    if (count > bestCount) { best = d; bestCount = count; }
+  });
+  return best;
+}
+
+export async function parseCsvBuffer(buffer, mapRow, delimiter = 'auto', headerKeywords = []) {
   const text = buffer.toString('utf8');
   const lines = text.split(/\r?\n/);
 
-  // ➜ Ignore les lignes vides et celles qui ne contiennent pas un des keywords (même entre guillemets)
+  // Cherche la vraie ligne de header (genre "Id Propriétaires")
   let headerLineIdx = 0;
   if (headerKeywords.length) {
     headerLineIdx = lines.findIndex(l =>
-      headerKeywords.some(key =>
-        l.replace(/"/g, '').includes(key)
-      )
+      headerKeywords.some(key => l.replace(/"/g, '').includes(key))
     );
     if (headerLineIdx === -1) headerLineIdx = 0;
   }
+  let delim = delimiter;
+  if (delimiter === 'auto' || !delimiter) {
+    delim = guessDelimiter(lines[headerLineIdx]);
+    console.log('[DEBUG][parseCsvBuffer] Delimiteur détecté:', delim);
+  } else {
+    console.log('[DEBUG][parseCsvBuffer] Delimiteur imposé:', delim);
+  }
 
-  // Skip avant header
   const cleanBuffer = Buffer.from(lines.slice(headerLineIdx).join('\n'), 'utf-8');
-  // (option) Log la ligne détectée :
-  // console.log('[DEBUG][parseCsvBuffer] Header ligne détectée:', lines[headerLineIdx]);
-
   const rows = [];
   const parser = parse({
     columns: true,
@@ -29,15 +41,15 @@ export async function parseCsvBuffer(buffer, mapRow, delimiter = ';', headerKeyw
     trim: true,
     relax: true,
     relax_quotes: true,
-    skip_records_with_error: true,
     bom: true,
-    delimiter,
+    delimiter: delim,
   });
 
   const stream = Readable.from(cleanBuffer).pipe(parser);
   for await (const row of stream) {
     const mapped = mapRow(row);
     if (mapped) rows.push(mapped);
+    else console.log('[DEBUG] Ligne ignorée:', row);
   }
   return rows;
 }
