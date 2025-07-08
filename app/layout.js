@@ -33,23 +33,24 @@ export default function RootLayout({ children }) {
             >
               Upload
             </Link>
-            <Link
-              href="/taxes"
-              className="transition hover:text-[#bd9254] px-2 py-1 rounded"
-            >
-              Taxes de séjour
-            </Link>
-            <Link
+              <Link
               href="/owners"
               className="transition hover:text-[#bd9254] px-2 py-1 rounded"
             >
               Propriétaires
             </Link>
             <Link
+              href="/taxes"
+              className="transition hover:text-[#bd9254] px-2 py-1 rounded"
+            >
+              Taxes collectées
+            </Link>
+          
+            <Link
               href="/versement"
               className="transition hover:text-[#bd9254] px-2 py-1 rounded"
             >
-              Téléversement
+              Téléversement Mairies
             </Link>
           </div>
         </nav>
