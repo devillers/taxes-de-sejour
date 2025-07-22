@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import CSVUploader from "../../components/CSVUploader";
+import CSVUploader from "../components/CSVUploader";
 
 export default function ImportPage() {
   const router = useRouter();
