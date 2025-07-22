@@ -27,11 +27,7 @@ export default function OwnersPage() {
     const nomLogement = owner.nomLogement || "";
     const matchProprio =
       searchProprietaire.trim() === "" ||
-      (
-        (owner.prenom ?? "") +
-        " " +
-        (owner.nom ?? "")
-      )
+      ((owner.prenom ?? "") + " " + (owner.nom ?? ""))
         .toLowerCase()
         .includes(searchProprietaire.trim().toLowerCase());
     const matchLogement =
@@ -64,7 +60,9 @@ export default function OwnersPage() {
         return;
       }
       updatedOwner = await res.json();
-      setOwners(owners.map((o) => (o._id === updatedOwner._id ? updatedOwner : o)));
+      setOwners(
+        owners.map((o) => (o._id === updatedOwner._id ? updatedOwner : o))
+      );
     } else {
       // Création
       const res = await fetch("/api/owners", {
@@ -106,104 +104,139 @@ export default function OwnersPage() {
 
   return (
     <div className="p-6 mx-auto ">
-      <h1 className="text-2xl font-semibold mb-6 text-gray-900">Propriétaires</h1>
+      <h1 className="text-2xl font-light mb-6 text-gray-900">
+        Propriétaires
+      </h1>
       {/* FILTRES + bouton */}
       <div className="mb-4 flex flex-col sm:flex-row gap-3 items-center">
         <input
           type="text"
-          className="border border-gray-300 rounded-xl px-4 py-2 w-full max-w-xs focus:outline-none focus:ring-2 focus:ring-indigo-200 transition"
+          className="border border-gray-300 rounded-xl text-sm px-4 py-2 w-full max-w-xs focus:outline-none focus:ring-1 focus:ring-[#bd9254] transition"
           placeholder="🔍 Par nom ou prénom"
           value={searchProprietaire}
-          onChange={e => setSearchProprietaire(e.target.value)}
+          onChange={(e) => setSearchProprietaire(e.target.value)}
         />
         <input
           type="text"
-          className="border border-gray-300 rounded-xl px-4 py-2 w-full max-w-xs focus:outline-none focus:ring-2 focus:ring-indigo-200 transition"
+          className="border border-gray-300 text-sm rounded-xl px-4 py-2 w-full max-w-xs  focus:outline-none focus:ring-1 focus:ring-[#bd9254] transition"
           placeholder="🔍 Par nom du logement"
           value={searchLogement}
-          onChange={e => setSearchLogement(e.target.value)}
+          onChange={(e) => setSearchLogement(e.target.value)}
         />
         <button
-          className="ml-0 sm:ml-2 mt-2 sm:mt-0 px-5 py-2 bg-[#bd9254] text-white rounded-xl text-sm hover:bg-[#a17435] font-medium"
+          className="ml-0 sm:ml-2 mt-2 sm:mt-0 px-5 py-2  bg-[#bd9254] text-white rounded-xl text-sm hover:bg-[#a17435] font-medium"
           onClick={openCreate}
         >
           + Créer un propriétaire
         </button>
-        <span className="text-gray-400 text-xs sm:ml-auto">
-          {filteredOwners.length} résultat{filteredOwners.length !== 1 ? "s" : ""}
+        <span className="text-gray-400   sm:ml-auto">
+          {filteredOwners.length} résultat
+          {filteredOwners.length !== 1 ? "s" : ""}
         </span>
       </div>
 
-      <div className="rounded-3xl shadow-xl bg-white overflow-x-auto border border-gray-200">
-  <table className="min-w-full bg-white text-sm">
-    <thead className="bg-gray-100 sticky top-0 z-10">
-      <tr>
-        <th className="px-2 py-3 font-light text-left text-gray-700">#</th>
-        <th className="px-2 py-3 font-light text-left text-gray-700">ID</th>
-        <th className="px-2 py-3 font-light text-left text-gray-700">Prénom</th>
-        <th className="px-2 py-3 font-light text-left text-gray-700">Nom</th>
-        <th className="px-2 py-3 font-light text-left text-gray-700">Nom du logement</th>
-        <th className="px-2 py-3 font-light text-left text-gray-700">Registre touristique</th>
-        <th className="px-2 py-3 font-light text-left text-gray-700">SIRET</th>
-        <th className="px-2 py-3 font-light text-left text-gray-700">Adresse</th>
-        <th className="px-2 py-3 font-light text-left text-gray-700">Code Postal</th>
-        <th className="px-2 py-3 font-light text-left text-gray-700">Ville</th>
-        {/* <th className="px-2 py-3 font-light text-left text-gray-700">Pays</th> */}
-        <th className="px-2 py-3 font-light text-left text-gray-700">Email</th>
-        <th className="px-2 py-3 font-light text-left text-gray-700">Téléphone</th>
-    
-        <th className="px-2 py-3 font-light text-left text-gray-700">Actions</th>
-      </tr>
-    </thead>
-    <tbody>
-      {filteredOwners.map((owner, i) => (
-        <tr
-          key={owner._id}
-          className={
-            "transition-all group hover:bg-indigo-50/60 " +
-            (i % 2 === 0 ? "bg-white" : "bg-gray-50")
-          }
-        >
-          <td className="px-2 py-2 font-mono text-[10px] text-gray-500">{i + 1}</td>
-          <td className="px-2 text-xs py-2">{owner.ownerId}</td>
-          <td className="px-2 text-xs py-2">{owner.prenom}</td>
-          <td className="px-2 text-xs py-2">{owner.nom}</td>
-          <td className="px-2 text-xs py-2">{owner.nomLogement ?? <span className="text-gray-300">—</span>}</td>
-          <td className="px-2 text-xs py-2">{owner.registreTouristique ?? <span className="text-gray-300">—</span>}</td>
-           <td className="px-2 text-xs py-2">{owner.siret}</td>
-          <td className="px-2 text-xs py-2">{owner.adresse}</td>
-          <td className="px-2 text-xs py-2">{owner.codePostal}</td>
-          <td className="px-2 text-xs py-2">{owner.ville}</td>
-          {/* <td className="px-2 text-xs py-2">{owner.pays}</td> */}
-          <td className="px-2 text-xs py-2">{owner.email}</td>
-          <td className="px-2 text-xs py-2">{owner.telephone}</td>
-      
-          <td className="px-2 text-xs py-2 flex gap-2">
-            <button
-              className="px-3 py-1 rounded-full bg-blue-100 hover:bg-blue-200 text-blue-700 text-xs font-medium"
-              onClick={() => openEdit(owner)}
-            >
-              Éditer
-            </button>
-            <button
-              className="px-3 py-1 rounded-full bg-red-100 hover:bg-red-200 text-red-700 text-xs font-medium"
-              onClick={() => handleDelete(owner)}
-            >
-              Effacer
-            </button>
-          </td>
-        </tr>
-      ))}
-    </tbody>
-  </table>
-</div>
+      <div className="overflow-x-auto rounded-2xl shadow-xl bg-white border border-gray-200">
+        <table className="w-full text-[10px]">
+          <thead className="bg-gray-100">
+            <tr>
+              <th className="px-3 py-2 whitespace-nowrap">#</th>
+              <th className="px-2 py-3 font-light text-left text-gray-700">
+                ID
+              </th>
+              <th className="px-2 py-3 font-light text-left text-gray-700">
+                SIRET
+              </th>
+              <th className="px-2 py-3 font-light text-left text-gray-700">
+                Prénom
+              </th>
+              <th className="px-2 py-3 font-light text-left text-gray-700">
+                Nom
+              </th>
+              <th className="px-2 py-3 font-light text-left text-gray-700">
+                Nom du logement
+              </th>
+              <th className="px-2 py-3 font-light text-left text-gray-700">
+                Registre touristique
+              </th>
 
+              <th className="px-2 py-3 font-light text-left text-gray-700">
+                Ville
+              </th>
+              {/* <th className="px-2 py-3 font-light text-left text-gray-700">Pays</th> */}
+              <th className="px-2 py-3 font-light text-left text-gray-700">
+                Email
+              </th>
+              <th className="px-2 py-3 font-light text-left text-gray-700">
+                Téléphone
+              </th>
+
+              <th className="px-2 py-3 font-light text-left text-gray-700">
+                Actions
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredOwners.map((owner, i) => (
+              <tr
+                key={owner._id}
+                className={
+                  "transition-all group hover:bg-indigo-50/60 " +
+                  (i % 2 === 0 ? "bg-white" : "bg-gray-50")
+                }
+              >
+                <td className="px-2 py-2 font-mono text-[10px] text-gray-500">
+                  {i + 1}
+                </td>
+                <td className="px-2  py-2">{owner.ownerId}</td>
+                <td className="px-2   py-2">{owner.siret}</td>
+                <td className="px-2  py-2">{owner.prenom}</td>
+                <td className="px-2   py-2">{owner.nom}</td>
+                <td className="px-2   py-2">
+                  {owner.nomLogement ?? (
+                    <span className="text-gray-300">—</span>
+                  )}
+                </td>
+                <td className="px-2   py-2">
+                  {owner.registreTouristique ?? (
+                    <span className="text-gray-300">—</span>
+                  )}
+                </td>
+
+                {/* <td className="px-2   py-2">{owner.adresse}</td> */}
+                {/* <td className="px-2   py-2">{owner.codePostal}</td> */}
+                <td className="px-2   py-2">{owner.ville}</td>
+                {/* <td className="px-2   py-2">{owner.pays}</td> */}
+                <td className="px-2   py-2">{owner.email}</td>
+                <td className="px-2   py-2">{owner.telephone}</td>
+
+                <td className="px-2   py-2 flex gap-2">
+                  <button
+                    className=" px-3 py-1 border-[1px] border-[#bd9254] bg-white text-[#bd9254] rounded-xl text-[10px] hover:bg-[#a17435] hover:text-white font-medium mr-2"
+                    onClick={() => openEdit(owner)}
+                  >
+                    Éditer
+                  </button>
+                  <button
+                    className=" px-3 py-1 border-[1px] border-[#bd9254] bg-white text-[#bd9254] rounded-xl text-[10px] hover:bg-red-400 hover:border-red-400 hover:text-white font-medium "
+                    onClick={() => handleDelete(owner)}
+                  >
+                    Effacer
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
 
       {/* Modal édition/création */}
       <OwnerModal
         open={modalOpen}
         owner={modalOwner}
-        onClose={() => { setModalOpen(false); setModalOwner(null); }}
+        onClose={() => {
+          setModalOpen(false);
+          setModalOwner(null);
+        }}
         onSave={handleSave}
       />
 

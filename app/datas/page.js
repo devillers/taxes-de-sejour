@@ -1,9 +1,19 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import CSVUploader from "../../components/CSVUploader";
 
 export default function ImportPage() {
+  const router = useRouter();
+
+  // --- PROTECTION LOGIN ---
+  useEffect(() => {
+    if (typeof window !== "undefined" && localStorage.getItem("isLoggedIn") !== "true") {
+      router.replace("/login");
+    }
+  }, [router]);
+
   const [ownerFile, setOwnerFile] = useState(null);
   const [accomFile, setAccomFile] = useState(null);
   const [taxFile, setTaxFile] = useState(null);
@@ -37,7 +47,7 @@ export default function ImportPage() {
       <div className="flex flex-col lg:flex-row gap-12 justify-center items-center ">
         {/* 1. Propriétaires */}
         <div className="flex flex-col items-center w-full max-w-xs p-8 rounded-3xl shadow-xl bg-white border border-gray-100">
-           <h2 className="text-lg font-thin mb-4 text-center">
+          <h2 className="text-lg font-thin mb-4 text-center">
             1. Importer les propriétaires
           </h2>
           <CSVUploader
@@ -60,7 +70,7 @@ export default function ImportPage() {
 
         {/* 2. Logements */}
         <div className="flex flex-col items-center w-full max-w-xs p-8 rounded-3xl shadow-xl bg-white border border-gray-100">
-           <h2 className="text-lg font-thin mb-4 text-center">
+          <h2 className="text-lg font-thin mb-4 text-center">
             2. Importer les logements
           </h2>
           <CSVUploader

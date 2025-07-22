@@ -3,8 +3,8 @@
 // Objet contenant les emails des mairies, avec clés NORMALISÉES
 export const mairies = {
   "chamonix-mont-blanc": "davidevillers@gmail.com",
-  "les-houches": "mairie@leshouches.fr",
-  "saint-gervais-les-bains": "mairie@saintgervais.com",
+  "les-houches": "davidevillers@gmail.com",
+  "saint-gervais-les-bains": "davidevillers@gmail.com",
   // Ajoute ici toutes tes autres villes au format normalisé
   "megeve": "mairie@megeve.fr"
 };

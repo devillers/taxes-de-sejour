@@ -1,7 +1,5 @@
-// /app/api/versement-tableau/route.js
-
 import { NextResponse } from "next/server";
-import { getTaxeDataByVille } from "../../lib/taxe-data"; // ou "@/lib/taxe-data" si tu as l'alias @
+import { getTaxeDataByVille } from "../../lib/taxe-data"; // ou "@/lib/taxe-data" si alias
 
 export async function GET(req) {
   try {
@@ -19,3 +17,4 @@ export async function GET(req) {
     return NextResponse.json({ error: e.message || "Erreur serveur" }, { status: 500 });
   }
 }
+

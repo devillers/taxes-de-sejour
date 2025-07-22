@@ -9,14 +9,7 @@ export default function RootLayout({ children }) {
         <nav className="bg-white shadow-md mx-auto  px-6 py-3 flex flex-col sm:flex-row items-center justify-around sticky top-0 z-40 backdrop-blur bg-opacity-90 ">
           {/* Logo */}
           <div className="flex items-center gap-2 text-xl font-light tracking-tight text-[#bd9254] mb-2 sm:mb-0">
-            <Image
-              src="/pin.png"
-              alt="Logo Pin"
-              width={28}
-              height={28}
-              className="rounded-full"
-              priority
-            />
+         <Image src="/pin.png" width={32} height={32} style={{ height: "auto" }} alt="Pin" />
             <Link href="/">Care Concierge</Link>
           </div>
           {/* Menu */}
@@ -33,11 +26,17 @@ export default function RootLayout({ children }) {
             >
               Upload
             </Link>
-              <Link
+            <Link
               href="/owners"
               className="transition hover:text-[#bd9254] px-2 py-1 rounded"
             >
               Propriétaires
+            </Link>
+            <Link
+              href="/properties"
+              className="transition hover:text-[#bd9254] px-2 py-1 rounded"
+            >
+              Logements
             </Link>
             <Link
               href="/taxes"
@@ -45,9 +44,9 @@ export default function RootLayout({ children }) {
             >
               Taxes collectées
             </Link>
-          
+
             <Link
-              href="/versement"
+              href="/versement-cumules"
               className="transition hover:text-[#bd9254] px-2 py-1 rounded"
             >
               Téléversement Mairies

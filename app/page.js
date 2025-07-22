@@ -5,7 +5,7 @@ export default function HomePage() {
   const [stats, setStats] = useState({
     ownersCount: 0,
     accommodationsCount: 0,
-    totalTaxes: 0
+    totalTaxes: 0,
   });
 
   useEffect(() => {
@@ -16,8 +16,6 @@ export default function HomePage() {
 
   return (
     <main className="min-h-screen max-w-3xl mx-auto flex flex-col justify-center">
-
-   
       <h1 className="text-3xl font-thin mb-6">Tableau de bord</h1>
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
         <div className="bg-white shadow-lg rounded-2xl p-6">

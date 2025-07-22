@@ -1,4 +1,4 @@
-//app/api/expoer-mail/route.js
+//app/api/export-mail/route.js
 import { NextResponse } from "next/server";
 import ExcelJS from "exceljs";
 import nodemailer from "nodemailer";
