@@ -33,19 +33,20 @@ Cette application permet aux conciergeries, hébergeurs ou communes de **calcule
 
 ## 📁 Structure du projet
 
-```bash
-app/
-  ├─ api/
-  │   ├─ upload/          # Endpoint de traitement CSV et enregistrement en DB
-  │   └─ export/          # Endpoint de génération Excel
-  ├─ dashboard/           # Interface principale avec tableau de résultats
-  └─ page.js              # Page d’accueil / upload
-components/
-  └─ CSVUploader.jsx      # Composant de drop zone pour fichiers CSV
-lib/
-  ├─ db.js                # Connexion à MongoDB
-  └─ taxCalculator.js     # Fonction de calcul des taxes
-models/
-  └─ Stay.js              # Schéma Mongoose des séjours
-styles/
-  └─ globals.css
+
+```
+
+## 🔧 Configuration
+
+Définissez les variables d'environnement suivantes pour que l'application
+fonctionne correctement :
+
+- `MONGODB_URI` – chaîne de connexion à la base MongoDB
+- `GMAIL_USER` – adresse Gmail utilisée pour l'envoi des mails
+- `GMAIL_PASS` – mot de passe de cette adresse Gmail
+- `SMTP_HOST` – hôte SMTP pour l'envoi du rapport Excel
+- `SMTP_PORT` – port SMTP correspondant
+- `SMTP_USER` – identifiant de connexion au serveur SMTP
+
+> **Important** : avant d'utiliser la fonctionnalité d'envoi d'e-mails,
+> importez les propriétaires via l'endpoint `/api/upload-owners`.

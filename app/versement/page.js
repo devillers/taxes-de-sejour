@@ -67,36 +67,7 @@ export default function TaxeTableau() {
     }
   }
 
-  // Envoi mail propriétaire (client)
-  async function handleSendMail(row) {
-    console.log("ROW DEBUG :", row);
-    alert("OwnerId dans row: " + row.ownerId);
-    alert("CLIC !");
-    console.log("row envoyé pour mail client :", row);
-    Object.keys(row).forEach((key) => console.log(key, ":", row[key]));
-    const id = row.hebergementId;
-    setMailStatus((prev) => ({ ...prev, [id]: "loading" }));
 
-    try {
-      const res = await fetch("/api/send-mail", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ownerId: row.ownerId, // <-- ownerId, PAS hebergementId
-          montantTaxe: row.montantTaxe,
-        }),
-      });
-
-      if (res.ok) {
-        setMailStatus((prev) => ({ ...prev, [id]: "sent" }));
-      } else {
-        throw new Error("Erreur d'envoi");
-      }
-    } catch (err) {
-      console.error("Erreur envoi mail client :", err);
-      setMailStatus((prev) => ({ ...prev, [id]: "idle" }));
-    }
-  }
 
   return (
     <div className="w-full max-w-[1700px] mx-auto px-4 py-8">

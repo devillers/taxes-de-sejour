@@ -5,8 +5,7 @@ export const mairies = {
   "chamonix-mont-blanc": "davidevillers@gmail.com",
   "les-houches": "davidevillers@gmail.com",
   "saint-gervais-les-bains": "davidevillers@gmail.com",
-  // Ajoute ici toutes tes autres villes au format normalisé
-  "megeve": "mairie@megeve.fr"
+  "megeve": "davidevillers@gmail.com"
 };
 
 // Fonction utilitaire : normalise un nom de ville pour correspondre aux clés de l'objet mairies
@@ -16,8 +15,8 @@ export function normalizeVille(ville) {
     .toLowerCase()
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "") // enlève accents
-    .replace(/\s+/g, "-")            // espaces → tirets
-    .replace(/-+/g, "-")             // plusieurs tirets → 1 seul
+    .replace(/\s+/g, "-") // espaces → tirets
+    .replace(/-+/g, "-") // plusieurs tirets → 1 seul
     .trim();
 }
 
@@ -25,5 +24,7 @@ export function normalizeVille(ville) {
 export function logVilleDebug(ville) {
   const norm = normalizeVille(ville);
   const email = mairies[norm];
-  console.log(`Test ville: "${ville}" => "${norm}" | email: ${email || "NON TROUVÉ"}`);
+  console.log(
+    `Test ville: "${ville}" => "${norm}" | email: ${email || "NON TROUVÉ"}`
+  );
 }

@@ -1,3 +1,6 @@
+//app/lib/taxe-data.js
+
+
 import { connectDb } from "../lib/db";
 import TaxImport from "../models/taxes";
 import Property from "../models/properties";
@@ -22,22 +25,22 @@ export async function getTaxeDataByVille(ville) {
   const ownersById = Object.fromEntries(owners.map(o => [o.ownerId, o]));
   const propertiesByLogement = Object.fromEntries(properties.map(p => [p.logement, p]));
 
- const tableau = taxes.map(tax => {
+const tableau = taxes.map(tax => {
   const property = propertiesByLogement[tax.logement] || {};
   const owner = ownersById[property.ownerId] || {};
 
   return {
     hebergementId: property.code || "",
-    ownerId: property.ownerId || "",    // <-- AJOUT ICI
+    ownerId: property.ownerId || "",
     proprietaireNom: owner.nom || "",
     proprietairePrenom: owner.prenom || "",
+    proprietaireEmail: owner.email || "",     // <-- ICI
     hebergementNum: property.registreTouristique || "",
     hebergementNom: property.logement || "",
     hebergementAdresse1: property.adresse || "",
     hebergementCp: property.codePostal || "",
     hebergementVille: property.localite || "",
     hebergementClassement: property.type || "",
-     proprietaireEmail: owner.email || "",
     prixNuitee: property.tarif || "",
     sejourDuree: tax.nuits || "",
     sejourPerception: tax.datePaiement || "",

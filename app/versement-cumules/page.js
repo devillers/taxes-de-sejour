@@ -1,12 +1,14 @@
+
+
 "use client";
 
 import { useEffect, useState } from "react";
-import { normalizeVille, mairies } from "../lib/mairies";
 import { FaSpinner } from "react-icons/fa";
 import ExcelJS from "exceljs";
 import { saveAs } from "file-saver";
+import { normalizeVille, mairies } from "../lib/mairies"; // n'oublie pas d'importer !
 
-// Fonction utilitaire : cumule les lignes par hebergementId
+// Cumule les montants par hebergementId
 function cumulerTaxesParLogement(data) {
   const map = new Map();
   for (const row of data) {
@@ -24,6 +26,7 @@ function cumulerTaxesParLogement(data) {
         (parseFloat(acc.nbPersonnes) || 0) + (parseFloat(row.nbPersonnes) || 0);
     }
   }
+  // Formate les montants pour l'affichage
   return Array.from(map.values()).map((row) => ({
     ...row,
     montantTaxe: Number(row.montantTaxe).toFixed(2),
@@ -32,137 +35,96 @@ function cumulerTaxesParLogement(data) {
   }));
 }
 
-export default function TaxeTableau() {
+export default function VersementCumulesPage() {
   const [data, setData] = useState([]);
   const [villesAll, setVillesAll] = useState([]);
   const [ville, setVille] = useState("");
   const [loading, setLoading] = useState(true);
   const [mailStatus, setMailStatus] = useState({});
-  // Totaux pour affichage HTML
-  const totalTaxe = data.reduce(
-    (acc, row) => acc + parseFloat(row.montantTaxe || 0),
-    0
-  );
-  const totalNuitees = data.reduce(
-    (acc, row) => acc + parseFloat(row.nbNuitees || 0),
-    0
-  );
-  const totalPers = data.reduce(
-    (acc, row) => acc + parseFloat(row.nbPersonnes || 0),
-    0
-  );
 
   useEffect(() => {
     setLoading(true);
-    fetch(
-      `/api/versement-tableau${
-        ville ? `?ville=${encodeURIComponent(ville)}` : ""
-      }`
-    )
+    fetch("/api/versement-tableau")
       .then((res) => res.json())
       .then((json) => {
         const cumules = cumulerTaxesParLogement(json);
         setData(cumules);
-        if (cumules && Array.isArray(cumules)) {
-          const allVilles = Array.from(
-            new Set(cumules.map((row) => row.hebergementVille).filter(Boolean))
-          );
-          setVillesAll(allVilles);
-        }
+        const villes = Array.from(
+          new Set(cumules.map((row) => row.hebergementVille).filter(Boolean))
+        ).sort();
+        setVillesAll(villes);
       })
-      .catch((err) => {
+      .catch(() => {
         setData([]);
         setVillesAll([]);
-        console.error("Erreur API versement-tableau :", err);
       })
       .finally(() => setLoading(false));
-  }, [ville]);
+  }, []);
 
-  // EXPORT EXCEL AVEC TOTAL GENERAL
+  // Filtrage par ville
+  const dataFiltree = ville
+    ? data.filter((row) => row.hebergementVille === ville)
+    : data;
+
+  // Totaux pour le tableau (cumul général filtré)
+  const totalTaxe = dataFiltree.reduce(
+    (acc, row) => acc + parseFloat(row.montantTaxe || 0),
+    0
+  );
+  const totalNuitees = dataFiltree.reduce(
+    (acc, row) => acc + parseFloat(row.nbNuitees || 0),
+    0
+  );
+  const totalPers = dataFiltree.reduce(
+    (acc, row) => acc + parseFloat(row.nbPersonnes || 0),
+    0
+  );
+
+  // Export Excel AVEC le filtre ville actif
   async function exportToExcel() {
     const workbook = new ExcelJS.Workbook();
-    const sheet = workbook.addWorksheet("Taxes de séjour");
-
-    // Colonnes
+    const sheet = workbook.addWorksheet("Taxes cumulées");
     sheet.columns = [
       { header: "#", key: "index", width: 5 },
       { header: "Id CARE", key: "hebergementId", width: 20 },
       { header: "Nom", key: "proprietaireNom", width: 16 },
       { header: "Prénom", key: "proprietairePrenom", width: 16 },
       { header: "Num Enregistrement", key: "hebergementNum", width: 16 },
-      { header: "Hébergement", key: "hebergementNom", width: 24 },
+      { header: "Hébergement Nom", key: "hebergementNom", width: 24 },
       { header: "Adresse", key: "hebergementAdresse1", width: 28 },
       { header: "CP", key: "hebergementCp", width: 10 },
       { header: "Ville", key: "hebergementVille", width: 18 },
       { header: "Classement", key: "hebergementClassement", width: 14 },
       { header: "Prix Nuitée", key: "prixNuitee", width: 12 },
+      { header: "Durée Séjour", key: "sejourDuree", width: 14 },
+      { header: "Perception", key: "sejourPerception", width: 14 },
+      { header: "Début Séjour", key: "sejourDebut", width: 14 },
       { header: "Nb Pers.", key: "nbPersonnes", width: 10 },
       { header: "Nb Nuitées", key: "nbNuitees", width: 10 },
       { header: "Tarif Unitaire", key: "tarifUnitaireTaxe", width: 14 },
       { header: "Montant Taxe (€)", key: "montantTaxe", width: 16 },
+      { header: "Email", key: "proprietaireEmail", width: 24 },
     ];
-
-    // Lignes
-    data.forEach((row, i) => {
-      sheet.addRow({
-        index: i + 1,
-        ...row,
-      });
+    dataFiltree.forEach((row, i) => {
+      sheet.addRow({ index: i + 1, ...row });
     });
-
-    // TOTALS
-    const totalTaxe = data.reduce(
-      (acc, row) => acc + parseFloat(row.montantTaxe || 0),
-      0
-    );
-    const totalNuitees = data.reduce(
-      (acc, row) => acc + parseFloat(row.nbNuitees || 0),
-      0
-    );
-    const totalPers = data.reduce(
-      (acc, row) => acc + parseFloat(row.nbPersonnes || 0),
-      0
-    );
-
+    // Ligne des totaux
     const totalRow = [
-      "", // #
-      "", // Id CARE
-      "", // Nom
-      "", // Prénom
-      "", // Num Enregistrement
-      "", // Hébergement
-      "", // Adresse
-      "", // CP
-      "", // Ville
-      "", // Classement
-      "", // Prix Nuitée
-      totalPers, // Nb Pers.
-      totalNuitees, // Nb Nuitées
-      "", // Tarif Unitaire
-      totalTaxe.toFixed(2), // Montant Taxe
+      "", "", "", "", "", "", "", "", "", "", "", "", "", "",
+      totalPers, totalNuitees, "", totalTaxe.toFixed(2), ""
     ];
-
-    // Ajoute la ligne TOTAL à la fin
     const added = sheet.addRow(totalRow);
-    // Fusionne les 11 premières cellules pour le label
-    sheet.mergeCells(`A${sheet.rowCount}:K${sheet.rowCount}`);
-    added.getCell(1).value = "TOTAL GÉNÉRAL";
-    // Style footer
+    sheet.mergeCells(`A${sheet.rowCount}:O${sheet.rowCount}`);
     added.font = { bold: true };
-    added.eachCell((cell, colNumber) => {
+    added.eachCell((cell) => {
       cell.fill = {
         type: "pattern",
         pattern: "solid",
         fgColor: { argb: "FFBD9254" },
       };
       cell.font = { bold: true, color: { argb: "FFFFFFFF" } };
-      cell.alignment = {
-        vertical: "middle",
-        horizontal: colNumber === 1 ? "left" : "center",
-      };
+      cell.alignment = { vertical: "middle", horizontal: "center" };
     });
-
-    // Style en-tête
     sheet.getRow(1).eachCell((cell) => {
       cell.font = { bold: true, color: { argb: "FFFFFFFF" } };
       cell.fill = {
@@ -172,17 +134,16 @@ export default function TaxeTableau() {
       };
       cell.alignment = { vertical: "middle", horizontal: "center" };
     });
-
-    // Générer et télécharger
     const buffer = await workbook.xlsx.writeBuffer();
     saveAs(
       new Blob([buffer], {
         type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
       }),
-      "taxe_sejour_versement.xlsx"
+      `taxe_sejour_cumules${ville ? `_${ville}` : ""}.xlsx`
     );
   }
 
+  // Envoi du rapport mairie (Excel) pour la ville filtrée
   async function handleExportAndSend(ville) {
     const villeKey = normalizeVille(ville);
     const email = mairies[villeKey];
@@ -196,8 +157,7 @@ export default function TaxeTableau() {
       );
       return;
     }
-
-    const res = await fetch("/api/send-mail", {
+    const res = await fetch("/api/export-mail", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ ville }),
@@ -210,38 +170,40 @@ export default function TaxeTableau() {
     }
   }
 
-async function handleSendMail(hebergementId, montantTaxe) {
-  setMailStatus((prev) => ({ ...prev, [hebergementId]: "loading" }));
-  try {
-    const res = await fetch("/api/send-mail", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ hebergementId, montantTaxe }),
-    });
-    if (res.ok) {
-      setMailStatus((prev) => ({ ...prev, [hebergementId]: "sent" }));
-    } else {
-      throw new Error("Erreur d'envoi");
+  // Envoi du mail cumul au propriétaire (inchangé)
+  async function handleSendMail(row) {
+    setMailStatus((prev) => ({ ...prev, [row.hebergementId]: "loading" }));
+    try {
+      const res = await fetch("/api/send-mail", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ownerId: row.ownerId,
+          email: row.proprietaireEmail,
+          montantTaxe: row.montantTaxe,
+           hebergementNom: row.hebergementNom, // <--- ajouter ce champ !
+        }),
+      });
+      if (res.ok) {
+        setMailStatus((prev) => ({ ...prev, [row.hebergementId]: "sent" }));
+      } else {
+        setMailStatus((prev) => ({ ...prev, [row.hebergementId]: "idle" }));
+      }
+    } catch (err) {
+      setMailStatus((prev) => ({ ...prev, [row.hebergementId]: "idle" }));
     }
-  } catch (err) {
-    setMailStatus((prev) => ({ ...prev, [hebergementId]: "idle" }));
   }
-}
-
 
   return (
     <div className="w-full max-w-[1700px] mx-auto px-4 py-8">
-      <h2 className="text-xl font-light mb-4">
-        Tableau Taxe de Séjour - Cumuls par logement
-      </h2>
-
+      <h2 className="text-xl font-bold mb-4">Tableau Taxe de Séjour (cumul)</h2>
       <div className="flex gap-3 items-center mb-6 flex-wrap">
         <label htmlFor="ville" className="text-md font-light text-gray-700">
           Filtrer par ville&nbsp;:
         </label>
         <select
           id="ville"
-          className="px-3 py-2 rounded-xl bg-[#bd9254] text-white text-xs font-medium hover:bg-[#a17435] outline-none"
+          className="px-5 py-2 border border-[#bd9254] bg-white text-[#bd9254] rounded-xl text-sm outline-none"
           value={ville}
           onChange={(e) => setVille(e.target.value)}
         >
@@ -252,36 +214,32 @@ async function handleSendMail(hebergementId, montantTaxe) {
             </option>
           ))}
         </select>
-        {ville && (
-          <>
-            <button
-              className="px-3 py-2 rounded-xl hover:bg-[#bd9254] text-[#bd9254] hover:text-white text-xs font-light bg-white ml-2 border-[1px] border-#bd9254]"
-              onClick={() => handleExportAndSend(ville)}
-            >
-              Exporter &amp; Envoyer à la mairie
-            </button>
-            <button
-              className="ml-2 px-3 py-2 rounded-xl bg-gray-100 text-xs text-gray-700 hover:bg-gray-200"
-              onClick={() => setVille("")}
-            >
-              Réinitialiser
-            </button>
-          </>
-        )}
-        <span className="ml-auto text-xs text-gray-400">
-          {loading
-            ? "Chargement..."
-            : `${data.length} logement${data.length > 1 ? "s" : ""} affiché${
-                data.length > 1 ? "s" : ""
-              }`}
-        </span>
         <button
-          className="px-3 py-2 rounded-xl bg-[#bd9254] text-white text-xs font-medium hover:bg-[#a17435] ml-2"
+          className="px-3 py-2 rounded-xl bg-[#bd9254] text-white text-xs font-medium hover:bg-[#a17435]"
           onClick={exportToExcel}
-          disabled={loading || data.length === 0}
+          disabled={loading || dataFiltree.length === 0}
         >
           Exporter Excel
         </button>
+        {ville && (
+          <button
+            className="ml-2 px-3 py-2 rounded-xl border border-[#bd9254] bg-white text-[#bd9254] text-xs font-light hover:bg-[#a17435] hover:text-white"
+            onClick={() => handleExportAndSend(ville)}
+          >
+            Envoyer rapport mairie
+          </button>
+        )}
+        <button
+          className="ml-2 px-3 py-2 rounded-xl bg-gray-100 text-xs text-gray-700 hover:bg-gray-200"
+          onClick={() => setVille("")}
+        >
+          Réinitialiser
+        </button>
+        <span className="ml-auto text-xs text-gray-400">
+          {loading
+            ? "Chargement..."
+            : `${dataFiltree.length} résultat${dataFiltree.length > 1 ? "s" : ""}`}
+        </span>
       </div>
 
       <div className="overflow-x-auto rounded-xl shadow-lg bg-white w-full">
@@ -292,9 +250,7 @@ async function handleSendMail(hebergementId, montantTaxe) {
               <th className="px-3 py-2 whitespace-nowrap">Id CARE</th>
               <th className="px-3 py-2 whitespace-nowrap">Nom</th>
               <th className="px-3 py-2 whitespace-nowrap">Prénom</th>
-              <th className="px-3 py-2 whitespace-nowrap">
-                Num Enregistrement
-              </th>
+              <th className="px-3 py-2 whitespace-nowrap">Num Enregistrement</th>
               <th className="px-3 py-2 whitespace-nowrap">Hébergement Nom</th>
               <th className="px-3 py-2 whitespace-nowrap">Adresse</th>
               <th className="px-3 py-2 whitespace-nowrap">CP</th>
@@ -308,30 +264,27 @@ async function handleSendMail(hebergementId, montantTaxe) {
               <th className="px-3 py-2 whitespace-nowrap">Nb Nuitées</th>
               <th className="px-3 py-2 whitespace-nowrap">Tarif Unitaire</th>
               <th className="px-3 py-2 whitespace-nowrap">Montant Taxe</th>
-              <th className="px-3 py-2 whitespace-nowrap">Mail client</th>
+              <th className="px-3 py-2 whitespace-nowrap">Mail</th>
             </tr>
           </thead>
           <tbody>
             {loading ? (
               <tr>
                 <td colSpan={19} className="text-center p-6">
-                  Chargement...
+                  <FaSpinner className="animate-spin inline" /> Chargement...
                 </td>
               </tr>
-            ) : data.length === 0 ? (
+            ) : dataFiltree.length === 0 ? (
               <tr>
                 <td colSpan={19} className="text-center p-6 text-gray-400">
-                  Aucun résultat pour cette ville
+                  Aucun résultat
                 </td>
               </tr>
             ) : (
-              data.map((row, i) => {
+              dataFiltree.map((row, i) => {
                 const status = mailStatus[row.hebergementId] || "idle";
                 return (
-                  <tr
-                    key={row.hebergementId}
-                    className={i % 2 === 0 ? "bg-white" : "bg-gray-50"}
-                  >
+                  <tr key={row.hebergementId}>
                     <td className="px-3 py-2 font-bold">{i + 1}</td>
                     <td className="px-3 py-2">{row.hebergementId}</td>
                     <td className="px-3 py-2">{row.proprietaireNom}</td>
@@ -352,13 +305,13 @@ async function handleSendMail(hebergementId, montantTaxe) {
                     <td className="px-3 py-2">{row.montantTaxe} €</td>
                     <td className="px-3 py-2">
                       <button
-                        className={`px-3 py-1 border-[1px] w-20 rounded-xl text-[10px] font-medium transition-all duration-200 ${
+                        className={`px-3 py-1 border-[1px] rounded-xl text-xs font-medium transition-all duration-200 ${
                           status === "sent"
                             ? "bg-green-500 border-green-500 text-white cursor-default"
                             : "bg-white text-[#bd9254] border-[#bd9254] hover:bg-red-400 hover:border-red-400 hover:text-white"
                         }`}
                         disabled={status !== "idle"}
-                       onClick={() => handleSendMail(row.hebergementId, row.montantTaxe)}
+                        onClick={() => handleSendMail(row)}
                       >
                         {status === "loading" ? (
                           <span className="flex items-center gap-1">
@@ -366,15 +319,28 @@ async function handleSendMail(hebergementId, montantTaxe) {
                             Envoi...
                           </span>
                         ) : status === "sent" ? (
-                          "OK"
+                          "envoyé"
                         ) : (
-                          "mail client"
+                          "email"
                         )}
                       </button>
                     </td>
                   </tr>
                 );
               })
+            )}
+            {/* LIGNE TOTAL */}
+            {!loading && dataFiltree.length > 0 && (
+              <tr className="font-bold bg-[#fff8ef]">
+                <td colSpan={15} className="text-right">
+                  TOTAL :
+                </td>
+                <td>{totalPers}</td>
+                <td>{totalNuitees}</td>
+                <td />
+                <td>{totalTaxe.toFixed(2)} €</td>
+                <td />
+              </tr>
             )}
           </tbody>
         </table>
