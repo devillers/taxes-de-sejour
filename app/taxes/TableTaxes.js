@@ -46,7 +46,7 @@ export default function TableTaxes() {
                 ID Réservation
               </th>
               <th className="px-2 py-3 font-bold text-left text-gray-900">
-                Nom
+                Classement
               </th>
               <th className="px-2 py-3 font-bold text-left text-gray-900">
                 Logement

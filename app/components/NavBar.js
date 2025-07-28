@@ -33,6 +33,9 @@ export default function NavBar() {
         <Link href="/versement-cumules" className="transition hover:text-[#bd9254] px-2 py-1 rounded">
           Téléversement Mairies
         </Link>
+          <Link href="/login" className="transition hover:text-[#bd9254] px-2 py-1 rounded">
+          Login
+        </Link>
       </div>
       {/* Auth */}
       <div className="ml-2 flex items-center gap-2">

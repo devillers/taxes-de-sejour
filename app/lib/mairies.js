@@ -5,7 +5,8 @@ export const mairies = {
   "chamonix-mont-blanc": "davidevillers@gmail.com",
   "les-houches": "davidevillers@gmail.com",
   "saint-gervais-les-bains": "davidevillers@gmail.com",
-  "megeve": "davidevillers@gmail.com"
+  "megeve": "davidevillers@gmail.com",
+  "combloux": "davidevillers@gmail.com",
 };
 
 // Fonction utilitaire : normalise un nom de ville pour correspondre aux clés de l'objet mairies
@@ -24,6 +25,16 @@ export function normalizeVille(ville) {
 export function logVilleDebug(ville) {
   const norm = normalizeVille(ville);
   const email = mairies[norm];
+  console.log("CLEFS MAIRIES DISPONIBLES :", Object.keys(mairies));
+  console.log(
+    "VILLE DEMANDÉE :",
+    ville,
+    "| CLÉ :",
+    villeKey,
+    "| EMAIL :",
+    email
+  );
+
   console.log(
     `Test ville: "${ville}" => "${norm}" | email: ${email || "NON TROUVÉ"}`
   );

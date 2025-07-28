@@ -1,27 +1,33 @@
-
-
-// app/api/accommodations/route.js
+// app/api/properties/route.js
 
 import { NextResponse } from 'next/server';
 import { connectDb } from '../../lib/db';
 import Property from '../../models/properties';
+import Owner from '../../models/owners';
 
-// GET: Liste tous les logements
+// GET: Liste tous les logements ou un logement par ID (avec nom/prénom/email propriétaire)
 export async function GET(req) {
   try {
     await connectDb();
 
-    // Si id présent dans la query, retourne le logement unique
     const { searchParams } = new URL(req.url);
     const id = searchParams.get('id');
+
+    // Charge tous les propriétaires pour faire la jointure
+    const owners = await Owner.find().lean();
+    const ownersById = Object.fromEntries(owners.map(o => [o.ownerId, o]));
 
     if (id) {
       const doc = await Property.findById(id).lean();
       if (!doc) return NextResponse.json({ error: 'Logement non trouvé' }, { status: 404 });
+
+      const owner = ownersById[doc.ownerId] || {};
       return NextResponse.json({
         _id: doc._id.toString(),
         ownerId: doc.ownerId,
-        nomProprietaire: doc.proprietaire || '',
+        nomProprietaire: owner.nom || '',
+        prenomProprietaire: owner.prenom || '',
+        emailProprietaire: owner.email || '',
         logement: doc.logement || '',
         type: doc.type || '',
         capacite: doc.capacite ?? null,
@@ -30,42 +36,47 @@ export async function GET(req) {
         localite: doc.localite || '',
         quartier: doc.quartier || '',
         codePostal: doc.codePostal || '',
-        adresse: `${doc.numero || ''} ${doc.typeVoie || ''} ${doc.adresse || ''}`.trim(),
+        adresse:  doc.adresse || "",
         etage: doc.etage || '',
         porte: doc.porte || '',
         escalier: doc.escalier || '',
         numeroRegistreTouristique: doc.registreTouristique || '',
         classement: doc.registreTouristique ? 'Classé' : 'Non classé',
         referenceCadastrale: doc.referenceCadastrale || '',
-        createdAt: doc.createdAt.toISOString(),
-        updatedAt: doc.updatedAt.toISOString(),
+        createdAt: doc.createdAt?.toISOString?.(),
+        updatedAt: doc.updatedAt?.toISOString?.(),
       });
     }
 
-    // Sinon, retourne la liste complète
+    // Retourne la liste complète avec jointure propriétaire
     const raw = await Property.find().lean();
-    const accommodations = raw.map(doc => ({
-      _id: doc._id.toString(),
-      ownerId: doc.ownerId,
-      nomProprietaire: doc.proprietaire || '',
-      logement: doc.logement || '',
-      type: doc.type || '',
-      capacite: doc.capacite ?? null,
-      code: doc.code || '',
-      edifice: doc.edifice || '',
-      localite: doc.localite || '',
-      quartier: doc.quartier || '',
-      codePostal: doc.codePostal || '',
-      adresse: `${doc.numero || ''} ${doc.typeVoie || ''} ${doc.adresse || ''}`.trim(),
-      etage: doc.etage || '',
-      porte: doc.porte || '',
-      escalier: doc.escalier || '',
-      numeroRegistreTouristique: doc.registreTouristique || '',
-      classement: doc.registreTouristique ? 'Classé' : 'Non classé',
-      referenceCadastrale: doc.referenceCadastrale || '',
-      createdAt: doc.createdAt.toISOString(),
-      updatedAt: doc.updatedAt.toISOString(),
-    }));
+    const accommodations = raw.map(doc => {
+      const owner = ownersById[doc.ownerId] || {};
+      return {
+        _id: doc._id.toString(),
+        ownerId: doc.ownerId,
+        nomProprietaire: owner.nom || '',
+        prenomProprietaire: owner.prenom || '',
+        emailProprietaire: owner.email || '',
+        logement: doc.logement || '',
+        type: doc.type || '',
+        capacite: doc.capacite ?? null,
+        code: doc.code || '',
+        edifice: doc.edifice || '',
+        localite: doc.localite || '',
+        quartier: doc.quartier || '',
+        codePostal: doc.codePostal || '',
+       adresse: doc.adresse || "",
+        etage: doc.etage || '',
+        porte: doc.porte || '',
+        escalier: doc.escalier || '',
+        numeroRegistreTouristique: doc.registreTouristique || '',
+        classement: doc.registreTouristique ? 'Classé' : 'Non classé',
+        referenceCadastrale: doc.referenceCadastrale || '',
+        createdAt: doc.createdAt?.toISOString?.(),
+        updatedAt: doc.updatedAt?.toISOString?.(),
+      };
+    });
 
     return NextResponse.json(accommodations);
   } catch (err) {
@@ -108,7 +119,7 @@ export async function POST(req) {
     return NextResponse.json({
       message: 'Logement créé avec succès',
       _id: created._id.toString(),
-      createdAt: created.createdAt.toISOString(),
+      createdAt: created.createdAt?.toISOString?.(),
     }, { status: 201 });
 
   } catch (err) {
@@ -134,7 +145,7 @@ export async function PUT(req) {
     return NextResponse.json({
       message: 'Logement mis à jour',
       _id: updated._id.toString(),
-      updatedAt: updated.updatedAt.toISOString(),
+      updatedAt: updated.updatedAt?.toISOString?.(),
     });
   } catch (err) {
     console.error('Erreur PUT logement :', err);

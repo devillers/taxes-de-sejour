@@ -1,3 +1,5 @@
+
+
 import { useEffect, useState } from "react";
 
 export default function PropertiesModal({ open, property, onSave, onClose }) {
@@ -5,11 +7,13 @@ export default function PropertiesModal({ open, property, onSave, onClose }) {
     ownerId: "",
     code: "",
     registreTouristique: "",
-    proprietaire: "",
+    nomProprietaire: "",
+    prenomProprietaire: "",
     logement: "",
     adresse: "",
     codePostal: "",
     localite: "",
+     taxeTouristique: "", // AJOUT
   });
 
   useEffect(() => {
@@ -17,12 +21,17 @@ export default function PropertiesModal({ open, property, onSave, onClose }) {
       setForm({
         ownerId: property?.ownerId || "",
         code: property?.code || "",
-        registreTouristique: property?.registreTouristique || property?.numeroRegistreTouristique || "",
-        proprietaire: property?.proprietaire || property?.nomProprietaire || "",
+        registreTouristique:
+          property?.registreTouristique ||
+          property?.numeroRegistreTouristique ||
+          "",
+        nomProprietaire: property?.nomProprietaire || "",
+        prenomProprietaire: property?.prenomProprietaire || "",
         logement: property?.logement || "",
         adresse: property?.adresse || "",
         codePostal: property?.codePostal || "",
         localite: property?.localite || "",
+        taxeTouristique: property?.taxeTouristique || property?.montantTaxe || "", // AJOUT
       });
     }
   }, [open, property]);
@@ -56,44 +65,152 @@ export default function PropertiesModal({ open, property, onSave, onClose }) {
           </div>
           <div className="grid grid-cols-2 gap-4 mb-2">
             <div className="flex flex-col col-span-2">
-              <label htmlFor="ownerId" className="text-xs text-[#bd9254] mb-1">ID Propriétaire</label>
-              <input className="border rounded-xl p-3 text-sm"
-                id="ownerId" name="ownerId" value={form.ownerId} onChange={handleChange} placeholder="ID Propriétaire" />
+              <label htmlFor="ownerId" className="text-xs text-[#bd9254] mb-1">
+                ID Propriétaire
+              </label>
+              <input
+                className="border rounded-xl p-3 text-sm"
+                id="ownerId"
+                name="ownerId"
+                value={form.ownerId}
+                onChange={handleChange}
+                placeholder="ID Propriétaire"
+              />
             </div>
             <div className="flex flex-col">
-              <label htmlFor="code" className="text-xs text-[#bd9254] mb-1">Code</label>
-              <input className="border rounded-xl p-3 text-sm"
-                id="code" name="code" value={form.code} onChange={handleChange} placeholder="Code" />
+              <label htmlFor="code" className="text-xs text-[#bd9254] mb-1">
+                Code
+              </label>
+              <input
+                className="border rounded-xl p-3 text-sm"
+                id="code"
+                name="code"
+                value={form.code}
+                onChange={handleChange}
+                placeholder="Code"
+              />
             </div>
             <div className="flex flex-col">
-              <label htmlFor="registreTouristique" className="text-xs text-[#bd9254] mb-1">Registre Touristique</label>
-              <input className="border rounded-xl p-3 text-sm"
-                id="registreTouristique" name="registreTouristique" value={form.registreTouristique} onChange={handleChange} placeholder="Registre touristique" />
+              <label
+                htmlFor="registreTouristique"
+                className="text-xs text-[#bd9254] mb-1"
+              >
+                Registre Touristique
+              </label>
+              <input
+                className="border rounded-xl p-3 text-sm"
+                id="registreTouristique"
+                name="registreTouristique"
+                value={form.registreTouristique}
+                onChange={handleChange}
+                placeholder="Registre touristique"
+              />
+            </div>
+            <div className="flex flex-col">
+              <label
+                htmlFor="nomProprietaire"
+                className="text-xs text-[#bd9254] mb-1"
+              >
+                Nom du propriétaire
+              </label>
+              <input
+                className="border rounded-xl p-3 text-sm"
+                id="nomProprietaire"
+                name="nomProprietaire"
+                value={form.nomProprietaire}
+                onChange={handleChange}
+                placeholder="Nom du propriétaire"
+              />
+            </div>
+            <div className="flex flex-col">
+              <label
+                htmlFor="prenomProprietaire"
+                className="text-xs text-[#bd9254] mb-1"
+              >
+                Prénom du propriétaire
+              </label>
+              <input
+                className="border rounded-xl p-3 text-sm"
+                id="prenomProprietaire"
+                name="prenomProprietaire"
+                value={form.prenomProprietaire}
+                onChange={handleChange}
+                placeholder="Prénom du propriétaire"
+              />
             </div>
             <div className="flex flex-col col-span-2">
-              <label htmlFor="proprietaire" className="text-xs text-[#bd9254] mb-1">Propriétaire</label>
-              <input className="border rounded-xl p-3 text-sm"
-                id="proprietaire" name="proprietaire" value={form.proprietaire} onChange={handleChange} placeholder="Propriétaire" />
+              <label htmlFor="logement" className="text-xs text-[#bd9254] mb-1">
+                Logement
+              </label>
+              <input
+                className="border rounded-xl p-3 text-sm"
+                id="logement"
+                name="logement"
+                value={form.logement}
+                onChange={handleChange}
+                placeholder="Nom du logement"
+              />
             </div>
+            {/* <div className="flex flex-col col-span-2">
+              <label
+                htmlFor="taxeTouristique"
+                className="text-xs text-[#bd9254] mb-1"
+              >
+                Taxe Touristique (€)
+              </label>
+              <input
+                className="border rounded-xl p-3 text-sm"
+                id="taxeTouristique"
+                name="taxeTouristique"
+                value={form.taxeTouristique}
+                onChange={handleChange}
+                placeholder="Montant de la taxe de séjour"
+                type="number"
+                min={0}
+                step="0.01"
+              />
+            </div> */}
             <div className="flex flex-col col-span-2">
-              <label htmlFor="logement" className="text-xs text-[#bd9254] mb-1">Logement</label>
-              <input className="border rounded-xl p-3 text-sm"
-                id="logement" name="logement" value={form.logement} onChange={handleChange} placeholder="Nom du logement" />
-            </div>
-            <div className="flex flex-col col-span-2">
-              <label htmlFor="adresse" className="text-xs text-[#bd9254] mb-1">Adresse</label>
-              <input className="border rounded-xl p-3 text-sm"
-                id="adresse" name="adresse" value={form.adresse} onChange={handleChange} placeholder="Adresse" />
+              <label htmlFor="adresse" className="text-xs text-[#bd9254] mb-1">
+                Adresse
+              </label>
+              <input
+                className="border rounded-xl p-3 text-sm"
+                id="adresse"
+                name="adresse"
+                value={form.adresse}
+                onChange={handleChange}
+                placeholder="Adresse"
+              />
             </div>
             <div className="flex flex-col">
-              <label htmlFor="codePostal" className="text-xs text-[#bd9254] mb-1">Code Postal</label>
-              <input className="border rounded-xl p-3 text-sm"
-                id="codePostal" name="codePostal" value={form.codePostal} onChange={handleChange} placeholder="Code Postal" />
+              <label
+                htmlFor="codePostal"
+                className="text-xs text-[#bd9254] mb-1"
+              >
+                Code Postal
+              </label>
+              <input
+                className="border rounded-xl p-3 text-sm"
+                id="codePostal"
+                name="codePostal"
+                value={form.codePostal}
+                onChange={handleChange}
+                placeholder="Code Postal"
+              />
             </div>
             <div className="flex flex-col">
-              <label htmlFor="localite" className="text-xs text-[#bd9254] mb-1">Localité</label>
-              <input className="border rounded-xl p-3 text-sm"
-                id="localite" name="localite" value={form.localite} onChange={handleChange} placeholder="Localité" />
+              <label htmlFor="localite" className="text-xs text-[#bd9254] mb-1">
+                Localité
+              </label>
+              <input
+                className="border rounded-xl p-3 text-sm"
+                id="localite"
+                name="localite"
+                value={form.localite}
+                onChange={handleChange}
+                placeholder="Localité"
+              />
             </div>
           </div>
           <div className="flex gap-3 mt-8">

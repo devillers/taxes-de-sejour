@@ -1,8 +1,11 @@
+//app/properties/page.js
+
 "use client";
 import { useEffect, useState } from "react";
 import PropertiesModal from "./PropertiesModal";
 import ExcelJS from "exceljs";
 import { saveAs } from "file-saver";
+import { FaSpinner } from "react-icons/fa";
 
 async function exportPropertiesToXLSX_ExcelJS(
   properties,
@@ -16,7 +19,8 @@ async function exportPropertiesToXLSX_ExcelJS(
     { header: "ownerId", key: "ownerId", width: 16 },
     { header: "Code", key: "code", width: 14 },
     { header: "Registre Touristique", key: "registre", width: 24 },
-    { header: "Propriétaire", key: "proprio", width: 18 },
+    { header: "Nom", key: "nomProprietaire", width: 14 },
+    { header: "Prénom", key: "prenomProprietaire", width: 16 },
     { header: "Logement", key: "logement", width: 18 },
     { header: "Adresse", key: "adresse", width: 22 },
     { header: "Code Postal", key: "codePostal", width: 12 },
@@ -30,7 +34,8 @@ async function exportPropertiesToXLSX_ExcelJS(
       code: item.code,
       registre:
         item.numeroRegistreTouristique || item.registreTouristique || "",
-      proprio: item.proprietaire || item.nomProprietaire || "",
+      nomProprietaire: item.nomProprietaire || "",
+      prenomProprietaire: item.prenomProprietaire || "",
       logement: item.logement,
       adresse: item.adresse,
       codePostal: item.codePostal,
@@ -58,12 +63,16 @@ export default function PropertiesTable() {
   const [villesFiltrees, setVillesFiltrees] = useState([]);
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedProperty, setSelectedProperty] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [triAlpha, setTriAlpha] = useState(true); // NEW: tri alphabétique par défaut
 
   useEffect(() => {
+    setLoading(true);
     fetch("/api/properties")
       .then((res) => res.json())
       .then((data) => setProperties(data))
-      .catch(console.error);
+      .catch(console.error)
+      .finally(() => setLoading(false));
   }, []);
 
   // Extraire la liste des villes distinctes
@@ -90,12 +99,13 @@ export default function PropertiesTable() {
   const handleClearVilles = () => setVillesFiltrees([]);
 
   // Filtrage du tableau
-  const filteredProperties = properties.filter((item) => {
+  let filteredProperties = properties.filter((item) => {
     const villeMatch =
       villesFiltrees.length === 0 ||
       villesFiltrees.includes((item.localite || "").trim());
+    // Filtre nom ou prénom
     const proprioMatch = filters.proprietaire
-      ? (item.proprietaire || item.nomProprietaire || "")
+      ? ((item.nomProprietaire || "") + " " + (item.prenomProprietaire || ""))
           .toLowerCase()
           .includes(filters.proprietaire.toLowerCase())
       : true;
@@ -107,6 +117,20 @@ export default function PropertiesTable() {
     return villeMatch && proprioMatch && logementMatch;
   });
 
+  // Trie alphabétique si la case est cochée
+  if (triAlpha) {
+    filteredProperties.sort((a, b) =>
+      (a.logement || "").localeCompare(b.logement || "", "fr", {
+        sensitivity: "base",
+      })
+    );
+  }
+
+//   if (triAlpha) {
+//   filteredProperties.sort((a, b) =>
+//     (a.nomProprietaire || "").localeCompare(b.nomProprietaire || "", "fr", { sensitivity: "base" })
+//   );
+// }
   // Ouvre le modale en mode édition
   const handleEdit = (property) => {
     setSelectedProperty(property);
@@ -152,10 +176,18 @@ export default function PropertiesTable() {
     }
   };
 
+  //Séparation en bloc de 3
+  function splitInBlocksOf3(str) {
+    if (typeof str !== "string") return str;
+    // Supprime tous les espaces
+    const cleaned = str.replace(/\s+/g, "");
+    // Split en blocs de 3 caractères
+    return cleaned.match(/.{1,3}/g)?.join(" ") || cleaned;
+  }
+
   return (
     <div className="p-8">
       <h1 className="text-2xl font-light mb-6">Liste des logements</h1>
-
       {/* Filtres */}
       <form className="mb-4  gap-6 items-end sticky top-[-220px] shadow-lg z-20 bg-white border-b border-gray-200 py-4">
         <div className="p-6">
@@ -176,18 +208,18 @@ export default function PropertiesTable() {
           </div>
           <button
             type="button"
-             className=" px-5 py-2 border-[1px] border-[#bd9254] bg-white text-[#bd9254] rounded-xl text-sm hover:bg-[#bd9254]] hover:text-white font-medium"
+            className=" px-5 py-2 border-[1px] border-[#bd9254] bg-white text-[#bd9254] rounded-xl text-sm hover:bg-[#bd9254] hover:text-white font-medium"
             onClick={handleClearVilles}
           >
             Tout décocher
           </button>
         </div>
-        <div className="  p-6 ">
+        <div className="p-6">
           <h2 className="text-sm italic uppercase font-light mb-4 ">
             filtrer par logements et par proprietaire
           </h2>
           <div className="flex flex-row justify-between items-center gap-4">
-            <div className="flex flex-row gap-4">
+            <div className="flex flex-row gap-4 items-center">
               <div>
                 <label
                   className="block text-xs font-light mb-1"
@@ -199,10 +231,10 @@ export default function PropertiesTable() {
                   type="text"
                   id="proprietaire"
                   name="proprietaire"
-                  placeholder="Filtrer par propriétaire"
+                  placeholder="Filtrer par nom ou prénom"
                   value={filters.proprietaire}
                   onChange={handleChange}
-                   className=" px-5 py-2 border-[1px] border-[#bd9254] bg-white text-[#bd9254] rounded-xl text-sm outline-none "
+                  className=" px-5 py-2 border-[1px] border-[#bd9254] bg-white text-[#bd9254] rounded-xl text-sm outline-none "
                 />
               </div>
               <div>
@@ -219,18 +251,31 @@ export default function PropertiesTable() {
                   placeholder="Filtrer par logement"
                   value={filters.logement}
                   onChange={handleChange}
-                   className=" px-5 py-2 border-[1px] border-[#bd9254] bg-white text-[#bd9254] rounded-xl text-sm outline-none "
+                  className=" px-5 py-2 border-[1px] border-[#bd9254] bg-white text-[#bd9254] rounded-xl text-sm outline-none "
                 />
               </div>
-             
+              {/* CHECKBOX TRI ALPHABÉTIQUE */}
+              <div className="flex items-center gap-2 ml-4">
+                <input
+                  type="checkbox"
+                  id="triAlpha"
+                  checked={triAlpha}
+                  onChange={e => setTriAlpha(e.target.checked)}
+                  className="accent-[#bd9254]"
+                />
+                <label htmlFor="triAlpha" className="text-xs font-light">
+                  Trier par ordre alphabétique
+                </label>
+              </div>
             </div>
-             {/* Bouton EXPORT */}
+            {/* Bouton EXPORT */}
             <div>
               <button
+                type="button"
                 onClick={() =>
                   exportPropertiesToXLSX_ExcelJS(filteredProperties)
                 }
-               className="px-5 py-2 border-[1px] border-[#bd9254] bg-white text-[#bd9254] rounded-xl text-sm hover:bg-[#a17435] hover:text-white font-medium"
+                className="px-5 py-2 border-[1px] border-[#bd9254] bg-white text-[#bd9254] rounded-xl text-sm hover:bg-[#a17435] hover:text-white font-medium"
               >
                 Exporter en Excel (.xlsx)
               </button>
@@ -246,7 +291,8 @@ export default function PropertiesTable() {
               <th className="px-2 py-2 text-left">ownerId</th>
               <th className="px-2 py-2 text-left">Code</th>
               <th className="px-2 py-2 text-left">Registre Touristique</th>
-              <th className="px-2 py-2 text-left">Propriétaire</th>
+              <th className="px-2 py-2 text-left">Nom</th>
+              <th className="px-2 py-2 text-left">Prénom - Entre</th>
               <th className="px-2 py-2 text-left">Logement</th>
               <th className="px-2 py-2 text-left">Adresse</th>
               <th className="px-2 py-2 text-left">Code Postal</th>
@@ -255,39 +301,57 @@ export default function PropertiesTable() {
             </tr>
           </thead>
           <tbody>
-            {filteredProperties.map((item, i) => (
-              <tr key={item._id} className="border-b border-b-gray-200 hover:bg-gray-50">
-                <td className="px-2 py-2">{i + 1}</td>
-                <td className="px-2 py-2">{item.ownerId}</td>
-                <td className="px-2 py-2">{item.code}</td>
-                <td className="px-2 py-2">
-                  {item.numeroRegistreTouristique ||
-                    item.registreTouristique ||
-                    ""}
-                </td>
-                <td className="px-2 py-2">
-                  {item.proprietaire || item.nomProprietaire || ""}
-                </td>
-                <td className="px-2 py-2">{item.logement}</td>
-                <td className="px-2 py-2">{item.adresse}</td>
-                <td className="px-2 py-2">{item.codePostal}</td>
-                <td className="px-2 py-2">{item.localite}</td>
-                <td className="px-2 py-2">
-                  <button
-                    className=" px-3 py-1 border-[1px] border-[#bd9254] bg-white text-[#bd9254] rounded-xl text-[10px] hover:bg-[#a17435] hover:text-white font-medium mr-2"
-                    onClick={() => handleEdit(item)}
-                  >
-                    Éditer
-                  </button>
-                  <button
-                         className=" px-3 py-1 border-[1px] border-[#bd9254] bg-white text-[#bd9254] rounded-xl text-[10px] hover:bg-red-400 hover:border-red-400 hover:text-white font-medium "
-                    onClick={() => handleDelete(item)}
-                  >
-                    Effacer
-                  </button>
+            {loading ? (
+              <tr>
+                <td colSpan={20} className="text-center p-6">
+                  <FaSpinner className="animate-spin inline" /> Chargement...
                 </td>
               </tr>
-            ))}
+            ) : filteredProperties.length === 0 ? (
+              <tr>
+                <td colSpan={20} className="text-center p-6 text-gray-400">
+                  Aucun résultat
+                </td>
+              </tr>
+            ) : (
+              filteredProperties.map((item, i) => (
+                <tr
+                  key={item._id}
+                  className="border-b border-b-gray-200 hover:bg-gray-50"
+                >
+                  <td className="px-2 py-2">{i + 1}</td>
+                  <td className="px-2 py-2">{item.ownerId}</td>
+                  <td className="px-2 py-2">{item.code}</td>
+                  <td className="px-2 py-2 text-[#bd9254] font-light italic">
+                    {splitInBlocksOf3(
+                      item.numeroRegistreTouristique ||
+                        item.registreTouristique ||
+                        ""
+                    )}
+                  </td>
+                  <td className="px-2 py-2">{item.nomProprietaire || ""}</td>
+                  <td className="px-2 py-2">{item.prenomProprietaire || ""}</td>
+                  <td className="px-2 py-2">{item.logement}</td>
+                  <td className="px-2 py-2">{item.adresse}</td>
+                  <td className="px-2 py-2">{item.codePostal}</td>
+                  <td className="px-2 py-2">{item.localite}</td>
+                  <td className="px-2 py-2">
+                    <button
+                      className=" px-3 py-1 border-[1px] border-[#bd9254] bg-white text-[#bd9254] rounded-xl text-[10px] hover:bg-[#a17435] hover:text-white font-medium mr-2"
+                      onClick={() => handleEdit(item)}
+                    >
+                      Éditer
+                    </button>
+                    <button
+                      className=" px-3 py-1 border-[1px] border-[#bd9254] bg-white text-[#bd9254] rounded-xl text-[10px] hover:bg-red-400 hover:border-red-400 hover:text-white font-medium "
+                      onClick={() => handleDelete(item)}
+                    >
+                      Effacer
+                    </button>
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
         {filteredProperties.length === 0 && (

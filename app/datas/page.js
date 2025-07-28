@@ -1,18 +1,11 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+
 import CSVUploader from "../components/CSVUploader";
 
 export default function ImportPage() {
-  const router = useRouter();
 
-  // --- PROTECTION LOGIN ---
-  useEffect(() => {
-    if (typeof window !== "undefined" && localStorage.getItem("isLoggedIn") !== "true") {
-      router.replace("/login");
-    }
-  }, [router]);
 
   const [ownerFile, setOwnerFile] = useState(null);
   const [accomFile, setAccomFile] = useState(null);

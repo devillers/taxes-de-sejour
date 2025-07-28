@@ -1,12 +1,9 @@
-
-
 "use client";
 
 import { useEffect, useState } from "react";
 import { FaSpinner } from "react-icons/fa";
 import ExcelJS from "exceljs";
 import { saveAs } from "file-saver";
-import { normalizeVille, mairies } from "../lib/mairies"; // n'oublie pas d'importer !
 
 // Cumule les montants par hebergementId
 function cumulerTaxesParLogement(data) {
@@ -87,18 +84,19 @@ export default function VersementCumulesPage() {
     sheet.columns = [
       { header: "#", key: "index", width: 5 },
       { header: "Id CARE", key: "hebergementId", width: 20 },
-      { header: "Nom", key: "proprietaireNom", width: 16 },
-      { header: "Prénom", key: "proprietairePrenom", width: 16 },
+      { header: "Prénom", key: "proprietairePrenom", width: 14 },
+      { header: "Nom", key: "proprietaireNom", width: 14 },
       { header: "Num Enregistrement", key: "hebergementNum", width: 16 },
       { header: "Hébergement Nom", key: "hebergementNom", width: 24 },
       { header: "Adresse", key: "hebergementAdresse1", width: 28 },
       { header: "CP", key: "hebergementCp", width: 10 },
       { header: "Ville", key: "hebergementVille", width: 18 },
-      { header: "Classement", key: "hebergementClassement", width: 14 },
+      { header: "Classement", key: "taxNom", width: 14 },
       { header: "Prix Nuitée", key: "prixNuitee", width: 12 },
       { header: "Durée Séjour", key: "sejourDuree", width: 14 },
       { header: "Perception", key: "sejourPerception", width: 14 },
       { header: "Début Séjour", key: "sejourDebut", width: 14 },
+      { header: "Fin Séjour", key: "sejourFin", width: 14 },
       { header: "Nb Pers.", key: "nbPersonnes", width: 10 },
       { header: "Nb Nuitées", key: "nbNuitees", width: 10 },
       { header: "Tarif Unitaire", key: "tarifUnitaireTaxe", width: 14 },
@@ -110,8 +108,25 @@ export default function VersementCumulesPage() {
     });
     // Ligne des totaux
     const totalRow = [
-      "", "", "", "", "", "", "", "", "", "", "", "", "", "",
-      totalPers, totalNuitees, "", totalTaxe.toFixed(2), ""
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      totalPers,
+      totalNuitees,
+      "",
+      totalTaxe.toFixed(2),
+      "",
     ];
     const added = sheet.addRow(totalRow);
     sheet.mergeCells(`A${sheet.rowCount}:O${sheet.rowCount}`);
@@ -145,22 +160,13 @@ export default function VersementCumulesPage() {
 
   // Envoi du rapport mairie (Excel) pour la ville filtrée
   async function handleExportAndSend(ville) {
-    const villeKey = normalizeVille(ville);
-    const email = mairies[villeKey];
-    if (!email) {
-      alert(
-        "Aucun email mairie enregistré pour cette ville (" +
-          ville +
-          ") (clé cherchée : " +
-          villeKey +
-          ")"
-      );
-      return;
-    }
     const res = await fetch("/api/export-mail", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ville }),
+      body: JSON.stringify({
+        ville,
+        rows: dataFiltree,
+      }),
     });
     const result = await res.json();
     if (result.success) {
@@ -181,7 +187,7 @@ export default function VersementCumulesPage() {
           ownerId: row.ownerId,
           email: row.proprietaireEmail,
           montantTaxe: row.montantTaxe,
-           hebergementNom: row.hebergementNom, // <--- ajouter ce champ !
+          hebergementNom: row.hebergementNom,
         }),
       });
       if (res.ok) {
@@ -192,6 +198,16 @@ export default function VersementCumulesPage() {
     } catch (err) {
       setMailStatus((prev) => ({ ...prev, [row.hebergementId]: "idle" }));
     }
+  }
+
+  //Separation en bloc de 3
+
+  function splitInBlocksOf3(str) {
+    if (typeof str !== "string") return str;
+    // Supprime tous les espaces
+    const cleaned = str.replace(/\s+/g, "");
+    // Split en blocs de 3 caractères
+    return cleaned.match(/.{1,3}/g)?.join(" ") || cleaned;
   }
 
   return (
@@ -238,7 +254,9 @@ export default function VersementCumulesPage() {
         <span className="ml-auto text-xs text-gray-400">
           {loading
             ? "Chargement..."
-            : `${dataFiltree.length} résultat${dataFiltree.length > 1 ? "s" : ""}`}
+            : `${dataFiltree.length} résultat${
+                dataFiltree.length > 1 ? "s" : ""
+              }`}
         </span>
       </div>
 
@@ -248,9 +266,11 @@ export default function VersementCumulesPage() {
             <tr>
               <th className="px-3 py-2 whitespace-nowrap">#</th>
               <th className="px-3 py-2 whitespace-nowrap">Id CARE</th>
-              <th className="px-3 py-2 whitespace-nowrap">Nom</th>
               <th className="px-3 py-2 whitespace-nowrap">Prénom</th>
-              <th className="px-3 py-2 whitespace-nowrap">Num Enregistrement</th>
+              <th className="px-3 py-2 whitespace-nowrap">Nom</th>
+              <th className="px-3 py-2 whitespace-nowrap">
+                Num Enregistrement
+              </th>
               <th className="px-3 py-2 whitespace-nowrap">Hébergement Nom</th>
               <th className="px-3 py-2 whitespace-nowrap">Adresse</th>
               <th className="px-3 py-2 whitespace-nowrap">CP</th>
@@ -260,6 +280,7 @@ export default function VersementCumulesPage() {
               <th className="px-3 py-2 whitespace-nowrap">Durée Séjour</th>
               <th className="px-3 py-2 whitespace-nowrap">Perception</th>
               <th className="px-3 py-2 whitespace-nowrap">Début Séjour</th>
+              <th className="px-3 py-2 whitespace-nowrap">Fin Séjour</th>
               <th className="px-3 py-2 whitespace-nowrap">Nb Pers.</th>
               <th className="px-3 py-2 whitespace-nowrap">Nb Nuitées</th>
               <th className="px-3 py-2 whitespace-nowrap">Tarif Unitaire</th>
@@ -270,13 +291,13 @@ export default function VersementCumulesPage() {
           <tbody>
             {loading ? (
               <tr>
-                <td colSpan={19} className="text-center p-6">
+                <td colSpan={20} className="text-center p-6">
                   <FaSpinner className="animate-spin inline" /> Chargement...
                 </td>
               </tr>
             ) : dataFiltree.length === 0 ? (
               <tr>
-                <td colSpan={19} className="text-center p-6 text-gray-400">
+                <td colSpan={20} className="text-center p-6 text-gray-400">
                   Aucun résultat
                 </td>
               </tr>
@@ -287,18 +308,19 @@ export default function VersementCumulesPage() {
                   <tr key={row.hebergementId}>
                     <td className="px-3 py-2 font-bold">{i + 1}</td>
                     <td className="px-3 py-2">{row.hebergementId}</td>
-                    <td className="px-3 py-2">{row.proprietaireNom}</td>
                     <td className="px-3 py-2">{row.proprietairePrenom}</td>
-                    <td className="px-3 py-2">{row.hebergementNum}</td>
+                    <td className="px-3 py-2">{row.proprietaireNom}</td>
+                    <td className="px-2 py-2 text-[#bd9254] font-light  italic">{splitInBlocksOf3(row.hebergementNum)}</td>
                     <td className="px-3 py-2">{row.hebergementNom}</td>
                     <td className="px-3 py-2">{row.hebergementAdresse1}</td>
                     <td className="px-3 py-2">{row.hebergementCp}</td>
                     <td className="px-3 py-2">{row.hebergementVille}</td>
-                    <td className="px-3 py-2">{row.hebergementClassement}</td>
-                    <td className="px-3 py-2">{row.prixNuitee}</td>
+                    <td className="px-3 py-2">{row.taxNom}</td>
+                    <td className="px-3 py-2">{row.prixNuitee} €</td>
                     <td className="px-3 py-2">{row.sejourDuree}</td>
                     <td className="px-3 py-2">{row.sejourPerception}</td>
                     <td className="px-3 py-2">{row.sejourDebut}</td>
+                    <td className="px-3 py-2">{row.sejourFin}</td>
                     <td className="px-3 py-2">{row.nbPersonnes}</td>
                     <td className="px-3 py-2">{row.nbNuitees}</td>
                     <td className="px-3 py-2">{row.tarifUnitaireTaxe} €</td>

@@ -1,5 +1,3 @@
-
-//APP/OWNERS/PAGE.JS
 "use client";
 import { useEffect, useState } from "react";
 import OwnerModal from "./OwnerModal";
@@ -39,49 +37,52 @@ export default function OwnersPage() {
   });
 
   // Actions
-  const openCreate = () => {
-    setModalOwner(null);
-    setModalOpen(true);
-  };
+  // const openCreate = () => {
+  //   setModalOwner(null);
+  //   setModalOpen(true);
+  // };
   const openEdit = (owner) => {
     setModalOwner(owner);
     setModalOpen(true);
   };
 
-  const handleSave = async (form) => {
-    let updatedOwner;
-    if (modalOwner) {
-      // Edition
-      const res = await fetch("/api/owners", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...modalOwner, ...form }),
-      });
-      if (!res.ok) {
-        alert("Erreur lors de la mise à jour");
-        return;
-      }
-      updatedOwner = await res.json();
-      setOwners(
-        owners.map((o) => (o._id === updatedOwner._id ? updatedOwner : o))
-      );
-    } else {
-      // Création
-      const res = await fetch("/api/owners", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
-      });
-      if (!res.ok) {
-        alert("Erreur lors de la création");
-        return;
-      }
-      updatedOwner = await res.json();
-      setOwners([updatedOwner, ...owners]);
+
+  // handleSave dans ta page OwnersPage
+const handleSave = async (form) => {
+  let updatedOwner;
+  if (modalOwner) {
+    // Édition
+    const res = await fetch("/api/owners", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ...modalOwner, ...form }), // le _id sera transmis
+    });
+    if (!res.ok) {
+      alert("Erreur lors de la mise à jour");
+      return;
     }
-    setModalOpen(false);
-    setModalOwner(null);
-  };
+    updatedOwner = await res.json();
+    setOwners(
+      owners.map((o) => (o._id === updatedOwner._id ? updatedOwner : o))
+    );
+  } else {
+    // Création
+    const res = await fetch("/api/owners", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(form),
+    });
+    if (!res.ok) {
+      alert("Erreur lors de la création");
+      return;
+    }
+    updatedOwner = await res.json();
+    setOwners([updatedOwner, ...owners]);
+  }
+  setModalOpen(false);
+  setModalOwner(null);
+};
+
 
   const handleDelete = (owner) => setDeleteOwner(owner);
 
@@ -104,11 +105,17 @@ export default function OwnersPage() {
       <div className="py-16 text-center text-lg text-gray-600">Chargement…</div>
     );
 
+  function splitInBlocksOf3(str) {
+    if (typeof str !== "string") return str;
+    // Supprime tous les espaces
+    const cleaned = str.replace(/\s+/g, "");
+    // Split en blocs de 3 caractères
+    return cleaned.match(/.{1,3}/g)?.join(" ") || cleaned;
+  }
+
   return (
-    <div className="p-6 mx-auto ">
-      <h1 className="text-2xl font-light mb-6 text-gray-900">
-        Propriétaires
-      </h1>
+    <div className="p-6 mx-auto">
+      <h1 className="text-2xl font-light mb-6 text-gray-900">Propriétaires</h1>
       {/* FILTRES + bouton */}
       <div className="mb-4 flex flex-col sm:flex-row gap-3 items-center">
         <input
@@ -125,12 +132,12 @@ export default function OwnersPage() {
           value={searchLogement}
           onChange={(e) => setSearchLogement(e.target.value)}
         />
-        <button
+        {/* <button
           className="ml-0 sm:ml-2 mt-2 sm:mt-0 px-5 py-2  bg-[#bd9254] text-white rounded-xl text-sm hover:bg-[#a17435] font-medium"
           onClick={openCreate}
         >
           + Créer un propriétaire
-        </button>
+        </button> */}
         <span className="text-gray-400   sm:ml-auto">
           {filteredOwners.length} résultat
           {filteredOwners.length !== 1 ? "s" : ""}
@@ -141,12 +148,15 @@ export default function OwnersPage() {
         <table className="w-full text-[10px]">
           <thead className="bg-gray-100">
             <tr>
-              <th className="px-3 py-2 whitespace-nowrap">#</th>
-              <th className="px-2 py-3 font-light text-left text-gray-700">
+              <th className="px-3 py-2 whitespace-nowrap w-4">#</th>
+              <th className="px-2 py-3 font-light text-left w-6 text-gray-700">
                 ID
               </th>
               <th className="px-2 py-3 font-light text-left text-gray-700">
                 SIRET
+              </th>
+              <th className="px-2 py-3 font-light text-left w-36 text-gray-700">
+                Registre touristique
               </th>
               <th className="px-2 py-3 font-light text-left text-gray-700">
                 Prénom
@@ -157,14 +167,18 @@ export default function OwnersPage() {
               <th className="px-2 py-3 font-light text-left text-gray-700">
                 Nom du logement
               </th>
+
+              <th className="px-2 py-3 font-light text-left w-36 text-gray-700">
+                Adresse
+              </th>
               <th className="px-2 py-3 font-light text-left text-gray-700">
-                Registre touristique
+                code postal
               </th>
 
-              <th className="px-2 py-3 font-light text-left text-gray-700">
+              <th className="px-2 py-3 font-light text-left w-45 text-gray-700">
                 Ville
               </th>
-              {/* <th className="px-2 py-3 font-light text-left text-gray-700">Pays</th> */}
+
               <th className="px-2 py-3 font-light text-left text-gray-700">
                 Email
               </th>
@@ -191,6 +205,8 @@ export default function OwnersPage() {
                 </td>
                 <td className="px-2  py-2">{owner.ownerId}</td>
                 <td className="px-2   py-2">{owner.siret}</td>
+                <td className="px-2 py-2 text-[#bd9254] ">{splitInBlocksOf3(owner.registreTouristique )}</td>
+              
                 <td className="px-2  py-2">{owner.prenom}</td>
                 <td className="px-2   py-2">{owner.nom}</td>
                 <td className="px-2   py-2">
@@ -198,18 +214,13 @@ export default function OwnersPage() {
                     <span className="text-gray-300">—</span>
                   )}
                 </td>
-                <td className="px-2   py-2">
-                  {owner.registreTouristique ?? (
-                    <span className="text-gray-300">—</span>
-                  )}
-                </td>
 
-                {/* <td className="px-2   py-2">{owner.adresse}</td> */}
-                {/* <td className="px-2   py-2">{owner.codePostal}</td> */}
+                <td className="px-2   py-2">{owner.adresse}</td>
+                <td className="px-2   py-2">{owner.codePostal}</td>
                 <td className="px-2   py-2">{owner.ville}</td>
-                {/* <td className="px-2   py-2">{owner.pays}</td> */}
+
                 <td className="px-2   py-2">{owner.email}</td>
-                <td className="px-2   py-2">{owner.telephone}</td>
+                <td className="px-2   text-[#bd9254] py-2">{splitInBlocksOf3(owner.telephone)}</td>
 
                 <td className="px-2   py-2 flex gap-2">
                   <button

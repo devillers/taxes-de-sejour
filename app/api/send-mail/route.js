@@ -48,7 +48,7 @@ export async function POST(req) {
 
     // 4. Envoyer le mail avec HTML + fallback texte
     await transporter.sendMail({
-      from: process.env.SMTP_FROM || '"Taxe de séjour" <noreply@domaine.fr>',
+      from: process.env.SMTP_FROM || '"Taxes de séjour" <noreply@domaine.fr>',
       to: destinataire,
       subject: `Paiement des taxes de séjour perçues – ${hebergementNom}`,
       text: `Bonjour,

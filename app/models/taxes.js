@@ -7,6 +7,7 @@ const taxSchema = new mongoose.Schema({
   nom:              { type: String },
   logement:         { type: String },
   montant:          { type: Number },
+  prixNuitee:       { type: Number }, 
   datePaiement:     { type: String },
   proprietaire:     { type: String },
   dateArrivee:      { type: String },
