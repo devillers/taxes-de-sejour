@@ -20,7 +20,11 @@ const ownerSchema = new mongoose.Schema(
     email: { type: String, lowercase: true, trim: true },
     telephone: { type: String, trim: true },
     siret: { type: String, trim: true },
-    registreTouristique:      { type: String, trim: true }, 
+    registreTouristique: { type: String, trim: true },
+    mandatType: { type: String, trim: true }, // "Exclusif" ou "Simple"
+    mandatDebut: { type: String, trim: true }, // Date format "YYYY-MM-DD"
+    mandatFin: { type: String, trim: true }, // Date format "YYYY-MM-DD" ou texte "Contrat tacitaire"
+
     emailIntranet: { type: String, lowercase: true, trim: true },
   },
   { timestamps: true }

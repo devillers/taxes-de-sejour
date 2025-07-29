@@ -46,43 +46,41 @@ export default function OwnersPage() {
     setModalOpen(true);
   };
 
-
   // handleSave dans ta page OwnersPage
-const handleSave = async (form) => {
-  let updatedOwner;
-  if (modalOwner) {
-    // Édition
-    const res = await fetch("/api/owners", {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...modalOwner, ...form }), // le _id sera transmis
-    });
-    if (!res.ok) {
-      alert("Erreur lors de la mise à jour");
-      return;
+  const handleSave = async (form) => {
+    let updatedOwner;
+    if (modalOwner) {
+      // Édition
+      const res = await fetch("/api/owners", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...modalOwner, ...form }), // le _id sera transmis
+      });
+      if (!res.ok) {
+        alert("Erreur lors de la mise à jour");
+        return;
+      }
+      updatedOwner = await res.json();
+      setOwners(
+        owners.map((o) => (o._id === updatedOwner._id ? updatedOwner : o))
+      );
+    } else {
+      // Création
+      const res = await fetch("/api/owners", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+      if (!res.ok) {
+        alert("Erreur lors de la création");
+        return;
+      }
+      updatedOwner = await res.json();
+      setOwners([updatedOwner, ...owners]);
     }
-    updatedOwner = await res.json();
-    setOwners(
-      owners.map((o) => (o._id === updatedOwner._id ? updatedOwner : o))
-    );
-  } else {
-    // Création
-    const res = await fetch("/api/owners", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(form),
-    });
-    if (!res.ok) {
-      alert("Erreur lors de la création");
-      return;
-    }
-    updatedOwner = await res.json();
-    setOwners([updatedOwner, ...owners]);
-  }
-  setModalOpen(false);
-  setModalOwner(null);
-};
-
+    setModalOpen(false);
+    setModalOwner(null);
+  };
 
   const handleDelete = (owner) => setDeleteOwner(owner);
 
@@ -148,7 +146,7 @@ const handleSave = async (form) => {
         <table className="w-full text-[10px]">
           <thead className="bg-gray-100">
             <tr>
-              <th className="px-3 py-2 whitespace-nowrap w-4">#</th>
+              <th className="px-3 py-3 whitespace-nowrap w-4">#</th>
               <th className="px-2 py-3 font-light text-left w-6 text-gray-700">
                 ID
               </th>
@@ -185,6 +183,15 @@ const handleSave = async (form) => {
               <th className="px-2 py-3 font-light text-left text-gray-700">
                 Téléphone
               </th>
+              <th className="px-2 py-3 font-light text-left text-gray-700">
+                Mandat
+              </th>
+              <th className="px-2 py-3 font-light text-left text-gray-700">
+                Début
+              </th>
+              <th className="px-2 py-3 font-light text-left text-gray-700">
+                Fin
+              </th>
 
               <th className="px-2 py-3 font-light text-left text-gray-700">
                 Actions
@@ -205,8 +212,10 @@ const handleSave = async (form) => {
                 </td>
                 <td className="px-2  py-2">{owner.ownerId}</td>
                 <td className="px-2   py-2">{owner.siret}</td>
-                <td className="px-2 py-2 text-[#bd9254] ">{splitInBlocksOf3(owner.registreTouristique )}</td>
-              
+                <td className="px-2 py-2 text-[#bd9254] ">
+                  {splitInBlocksOf3(owner.registreTouristique)}
+                </td>
+
                 <td className="px-2  py-2">{owner.prenom}</td>
                 <td className="px-2   py-2">{owner.nom}</td>
                 <td className="px-2   py-2">
@@ -220,7 +229,22 @@ const handleSave = async (form) => {
                 <td className="px-2   py-2">{owner.ville}</td>
 
                 <td className="px-2   py-2">{owner.email}</td>
-                <td className="px-2   text-[#bd9254] py-2">{splitInBlocksOf3(owner.telephone)}</td>
+                <td className="px-2  w-30 text-[#bd9254] py-2">
+                  {splitInBlocksOf3(owner.telephone)}
+                </td>
+                <td className="px-2 py-2">
+                  {owner.mandatType || <span className="text-gray-300">—</span>}
+                </td>
+                <td className="px-2 py-2">
+                  {owner.mandatDebut ? (
+                    new Date(owner.mandatDebut).toLocaleDateString()
+                  ) : (
+                    <span className="text-gray-300">—</span>
+                  )}
+                </td>
+                <td className="px-2 py-2 font-light">
+                  {owner.mandatFin || <span className="text-gray-300">—</span>}
+                </td>
 
                 <td className="px-2   py-2 flex gap-2">
                   <button
